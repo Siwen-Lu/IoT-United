@@ -1,0 +1,12 @@
+sample_service.c:104:12:Add_Sample_Service	96	static
+sample_service.c:143:6:Make_Connection	80	static
+sample_service.c:191:6:startReadTXCharHandle	40	static
+sample_service.c:208:6:startReadRXCharHandle	40	static
+sample_service.c:227:6:receiveData	24	static
+sample_service.c:244:6:sendData	24	static
+sample_service.c:259:6:enableNotification	16	static
+sample_service.c:279:6:Attribute_Modified_CB	16	static
+sample_service.c:295:6:GAP_ConnectionComplete_CB	24	static
+sample_service.c:312:6:GAP_DisconnectionComplete_CB	8	static
+sample_service.c:333:6:GATT_Notification_CB	16	static
+sample_service.c:347:6:user_notify	56	static
