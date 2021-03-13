@@ -1,0 +1,5 @@
+app_bluenrg_ms.c:96:6:MX_BlueNRG_MS_Init	64	static
+app_bluenrg_ms.c:222:6:MX_BlueNRG_MS_Process	8	static
+app_bluenrg_ms.c:242:13:User_Init	8	static
+app_bluenrg_ms.c:257:13:User_Process	40	static
+app_bluenrg_ms.c:319:6:BSP_PB_Callback	16	static
