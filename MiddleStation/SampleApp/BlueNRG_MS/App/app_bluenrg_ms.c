@@ -160,7 +160,7 @@ void MX_BlueNRG_MS_Init(void)
   /* GAP Init */
   if (bnrg_expansion_board == IDB05A1) {
     //ret = aci_gap_init_IDB05A1(GAP_PERIPHERAL_ROLE_IDB05A1, 0, 0x07, &service_handle, &dev_name_char_handle, &appearance_char_handle);
-	ret = aci_gap_init_IDB05A1(GAP_CENTRAL_ROLE_IDB05A1, 0, 0x07, &service_handle, &dev_name_char_handle, &appearance_char_handle);
+	ret = aci_gap_init_IDB05A1(GAP_OBSERVER_ROLE_IDB05A1, 0, 0x07, &service_handle, &dev_name_char_handle, &appearance_char_handle);
   }
   else {
     ret = aci_gap_init_IDB04A1(GAP_OBSERVER_ROLE_IDB04A1, &service_handle, &dev_name_char_handle, &appearance_char_handle);
@@ -225,7 +225,7 @@ void MX_BlueNRG_MS_Process(void)
 {
   /* USER CODE BEGIN BlueNRG_MS_Process_PreTreatment */
 
-
+int ret = aci_gap_start_observation_procedure  ( 0x3000,0x3000, ACTIVE_SCAN,STATIC_RANDOM_ADDR,0x01);
   /* USER CODE END BlueNRG_MS_Process_PreTreatment */
 
   User_Process();
