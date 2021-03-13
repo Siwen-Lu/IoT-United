@@ -207,9 +207,9 @@ void MX_BlueNRG_MS_Init(void)
   ret = aci_hal_set_tx_power_level(1,4);
 
   /* USER CODE BEGIN BlueNRG_MS_Init_PostTreatment */
-	ret = aci_gap_start_observation_procedure( 0x3000,0x3000,PASSIVE_SCAN,PUBLIC_ADDR,0x01);
+	ret = aci_gap_start_observation_procedure( 0x0008,0x0004,PASSIVE_SCAN,PUBLIC_ADDR,0x01);
 		if (ret == BLE_STATUS_SUCCESS)
-			printf("OK\n");
+			printf("OK");
 		else
 			printf("haha\n");
 

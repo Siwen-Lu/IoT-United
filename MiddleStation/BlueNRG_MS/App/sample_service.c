@@ -371,6 +371,14 @@ void user_notify(void * pData)
           GAP_ConnectionComplete_CB(cc->peer_bdaddr, cc->handle);
         }
         break;
+      case EVT_LE_ADVERTISING_REPORT:
+		  {
+			  printf("scanning successful %d\n",ADV_IND);
+			  le_advertising_info cur_report;
+			  printf("bluetooth address is %d%d%d%d%d\n",cur_report.bdaddr[5],cur_report.bdaddr[4],cur_report.bdaddr[3],cur_report.bdaddr[2],cur_report.bdaddr[1],cur_report.bdaddr[0]);
+			  printf("RSSI Value is %d\n",cur_report.data_RSSI);
+		  }
+		  break;
       }
     }
     break;
