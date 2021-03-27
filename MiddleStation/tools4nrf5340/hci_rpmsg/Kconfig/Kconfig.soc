@@ -1,0 +1,1 @@
+osource "C:/Users/Jacob/ncs/v1.5.0/zephyr/soc/$(ARCH)/*/Kconfig.soc"
