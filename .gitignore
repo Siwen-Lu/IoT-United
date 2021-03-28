@@ -1,3 +1,10 @@
 ble_test_stm32l4s5iota/Debug/
 MiddleStation/B-L4S5I-IOT01A/Debug/
+MiddleStation/MiddleStation-Zephyr/zephyr/build/
 Assets/B-L4S5I-IOT01A/Debug/
+Assets/Assets-Zephyr/zephyr/build/
+tools/
+zephyr/
+modules/
+bootloader/
+.west/
