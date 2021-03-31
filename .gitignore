@@ -13,3 +13,4 @@ ble_test_stm32l4s5iota/Debug/
 /nrf/
 /nrfxlib/
 /test/
+Functionality_Tests/Priority_queue/priority_queue
