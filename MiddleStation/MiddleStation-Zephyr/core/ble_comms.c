@@ -1,4 +1,4 @@
-#include "main.h"
+#include "ble_comms.h"
 
 struct bt_conn *thingy;
 int is_connected;

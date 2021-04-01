@@ -4,7 +4,9 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "../../**"
+                "~/zephyr/**",
+                "~/nrf/**",
+                "~/nrfxlib/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

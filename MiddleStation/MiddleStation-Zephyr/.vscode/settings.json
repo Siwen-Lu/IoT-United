@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "main.h": "c",
+        "reboot.h": "c",
+        "ble_comms.h": "c"
+    }
+}
