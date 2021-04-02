@@ -8,12 +8,7 @@
 #include <bluetooth/gatt.h>
 #include <bluetooth/gatt_dm.h>
 
-typedef struct conn_handler{
-    bool dirty; // was it connected before?
-    struct bt_conn *conn;
-    int8_t rssi;
-    uint8_t battery_lvl;
-}ConnHandler;
+#include "conn_queue.h"
 
 void ble_comms_start();
 void start_scan(void);

@@ -37,7 +37,7 @@ int EnQueue(ConnPQueue *queue, ConnHandler ch, uint32_t priority) {
 
     if (p != NULL) {
 
-		//memcpy(&p->conn,&ch,sizeof(ConnHandler));
+		memcpy(&p->conn,&ch,sizeof(ConnHandler));
 		p->priority = priority;
 
 		if(IsEmptyQueue(queue)){
@@ -98,7 +98,7 @@ int DeQueue(ConnPQueue *queue, ConnHandler *ch){
     if (IsEmptyQueue(queue)!=1) {
 
 		ConnPQNode *p = queue->Front;
-		//memcpy(ch,&p->conn,sizeof(ConnHandler));
+		memcpy(ch,&p->conn,sizeof(ConnHandler));
 		queue->Front = queue->Front->Next;
 		k_free(p);
 		p = NULL;

@@ -1,14 +1,12 @@
 #include "ble_comms.h"
 
-struct bt_conn *thingy;
-int is_connected;
+ConnPQueue ConnPQ;
 
 struct k_mutex discovering;
 struct k_condvar wait_discovering_complete;
 
 struct bt_conn *conn_connecting;
 uint8_t conn_count;
-struct bt_uuid_16 uuid = BT_UUID_INIT_16(0);
 struct bt_gatt_discover_params discover_params;
 struct bt_gatt_read_params read_params;
 
@@ -60,8 +58,8 @@ void start_scan(void)
 	struct bt_le_scan_param scan_param = {
 		.type       = BT_LE_SCAN_TYPE_PASSIVE,
 		.options    = BT_LE_SCAN_OPT_NONE,
-		.interval   = BT_GAP_SCAN_SLOW_INTERVAL_1,
-		.window     = BT_GAP_SCAN_SLOW_INTERVAL_1,
+		.interval   = BT_GAP_SCAN_FAST_INTERVAL,
+		.window     = BT_GAP_SCAN_FAST_WINDOW,
 	};
 	err = bt_le_scan_start(&scan_param, device_found);
 	if (err) {
@@ -97,10 +95,7 @@ static void discover_all_completed(struct bt_gatt_dm *dm, void *ctx)
 	printk("Attribute count: %d\n", attr_count);
 
 	//bt_gatt_dm_data_print(dm);
-	printk("print done \n");
 	bt_gatt_dm_data_release(dm);
-	printk("release done \n");
-
 	bt_gatt_dm_continue(dm, NULL);
 }
 
@@ -151,8 +146,14 @@ static void connected(struct bt_conn *conn, uint8_t err)
 
 	printk("Connected (%u): %s\n", conn_count, addr);
 
-	thingy = conn;
-	is_connected = 1;
+	ConnHandler new_conn;
+	new_conn.conn = conn;
+	new_conn.rssi = 0;
+	new_conn.battery_lvl = 0;
+	new_conn.dirty = 0;
+
+	EnQueue(&ConnPQ,new_conn,conn_count);
+
 
 	conn_connecting = NULL;
 	irq_unlock(key);
@@ -166,7 +167,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
 	bt_conn_unref(conn);
-	is_connected = 0;
+
 	if (conn_count == CONFIG_BT_MAX_CONN) {
 		start_scan();
 	}

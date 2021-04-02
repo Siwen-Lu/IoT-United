@@ -5,8 +5,16 @@
 #include <zephyr.h>
 #include "ble_comms.h"
 
+
+typedef struct conn_handler{
+    bool dirty; // was it connected before?
+    struct bt_conn *conn;
+    int8_t rssi;
+    uint8_t battery_lvl;
+}ConnHandler;
+
 typedef struct pq_conn_node {
-    //ConnHandler conn;
+    ConnHandler conn;
     uint32_t priority;
     struct pq_conn_node * Next;
 }ConnPQNode;
