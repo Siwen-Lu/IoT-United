@@ -23,7 +23,7 @@ void conn_process(){
 			DeQueue(&ConnPQ, &curr_conn);
 			char addr_str[BT_ADDR_LE_STR_LEN];
 			bt_addr_le_to_str(bt_conn_get_dst(curr_conn.conn), addr_str,sizeof(addr_str));
-			printk("connected %s\n",addr_str);
+			printk("Successfully handling connection from %s\n",addr_str);
 
 			k_mutex_lock(&discovering, K_FOREVER);
 			int err = bt_gatt_dm_start(curr_conn.conn, NULL, &discover_all_cb, NULL);

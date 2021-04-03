@@ -13,8 +13,6 @@
 #include "ble_comms.h"
 #include "conn_queue.h"
 
-extern struct bt_conn *thingy;
-extern int is_connected;
 extern struct k_mutex discovering;
 extern struct k_condvar wait_discovering_complete;
 extern struct bt_gatt_dm_cb discover_all_cb;
