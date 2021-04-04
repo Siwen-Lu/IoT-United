@@ -12,15 +12,24 @@
 
 #include "ble_comms.h"
 #include "conn_queue.h"
+#include "device_record.h"
 
 extern struct k_mutex discovering;
 extern struct k_condvar wait_discovering_complete;
-extern struct bt_gatt_dm_cb discover_all_cb;
-extern ConnPQueue ConnPQ;
 
-typedef struct{
-    bt_addr_le_t addr;
-    uint32_t last_conn_timestamp;
-}device_records;
+extern struct k_sem gatt_read_sem;
+
+
+
+
+
+extern struct bt_gatt_dm_cb discover_all_cb;
+extern struct bt_gatt_read_params gatt_read_params;
+extern struct bt_gatt_write_params gatt_write_params;
+
+
+
+extern ConnPQueue ConnPQ;
+extern ConnRec ConnRC;
 
 #endif

@@ -29,7 +29,8 @@ int IsFullQueue(ConnPQueue *queue) {
 	return false;
 }
 
-int EnQueue(ConnPQueue *queue, ConnHandler ch, uint32_t priority) {
+//can assume the queue never exceed the max length
+int EnQueue(ConnPQueue *queue, ConnHandler ch, int64_t priority) {
 
 	//printk("entering queue\n");
 
@@ -49,20 +50,6 @@ int EnQueue(ConnPQueue *queue, ConnHandler ch, uint32_t priority) {
 		}
 
 		ConnPQNode *curr = queue->Front;
-
-		if(IsFullQueue(queue)){
-			//printk("CONN Queue is full, need to drop last one\n");
-			while(curr->Next != queue->Rear){
-				curr = curr->Next;
-			}
-			ConnPQNode *last = queue->Rear;
-			queue->Rear = curr;
-			queue->Rear->Next = NULL;
-			k_free(last);
-			last = NULL;
-		}
-
-		curr = queue->Front;
 		ConnPQNode *prev = NULL;
 		while(curr->Next != NULL){
 			if(priority <= curr->priority){

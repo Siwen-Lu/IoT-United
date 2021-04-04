@@ -9,6 +9,7 @@
 #include <bluetooth/gatt_dm.h>
 
 #include "conn_queue.h"
+#include "device_record.h"
 
 void ble_comms_start();
 void start_scan(void);

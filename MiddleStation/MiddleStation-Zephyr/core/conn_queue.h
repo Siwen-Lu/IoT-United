@@ -1,13 +1,12 @@
 #ifndef _CONN_QUEUE_
 #define _CONN_QUEUE_
-#define MAX_CONN_QUEUE_SIZE CONFIG_BT_MAX_CONN
+#define MAX_CONN_QUEUE_SIZE CONFIG_BT_MAX_CONN - 1
 #include <power/reboot.h>
 #include <zephyr.h>
 #include "ble_comms.h"
 
 
 typedef struct conn_handler{
-    bool dirty; // was it connected before?
     struct bt_conn *conn;
     int8_t rssi;
     uint8_t battery_lvl;
@@ -15,7 +14,7 @@ typedef struct conn_handler{
 
 typedef struct pq_conn_node {
     ConnHandler conn;
-    uint32_t priority;
+    int64_t priority;
     struct pq_conn_node * Next;
 }ConnPQNode;
 
@@ -26,7 +25,8 @@ typedef struct pq_conn {
 
 void InitQueue(ConnPQueue *queue);
 int IsEmptyQueue(ConnPQueue *queue);
-int EnQueue(ConnPQueue *queue, ConnHandler ch, uint32_t priority);
+int IsFullQueue(ConnPQueue *queue);
+int EnQueue(ConnPQueue *queue, ConnHandler ch, int64_t priority);
 int DeQueue(ConnPQueue *queue, ConnHandler *ch);
 void DestroyQueue(ConnPQueue *queue);
 
