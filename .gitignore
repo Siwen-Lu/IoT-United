@@ -1,6 +1,6 @@
 ble_test_stm32l4s5iota/Debug/
 /MiddleStation/B-L4S5I-IOT01A/Debug/
-/MiddleStation/MiddleStation-Zephyr/zephyr/build/
+/MiddleStation/MiddleStation-Zephyr/build/
 /Assets/B-L4S5I-IOT01A/Debug/
 /Assets/Assets-Zephyr/zephyr/build/
 /tools/
@@ -8,3 +8,9 @@ ble_test_stm32l4s5iota/Debug/
 /modules/
 /bootloader/
 /.west/
+/mbedtls/
+/nrf/
+/nrf/
+/nrfxlib/
+/test/
+Functionality_Tests/Priority_queue/priority_queue
