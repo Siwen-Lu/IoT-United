@@ -1,0 +1,129 @@
+{
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"add_dependencies",
+			"include",
+			"include_boilerplate",
+			"find_package"
+		],
+		"files" : 
+		[
+			"C:/Users/Jacob/visualgdb/v1.5.0/zephyr/cmake/flash/CMakeLists.txt",
+			"C:/Users/Jacob/visualgdb/v1.5.0/nrf/cmake/partition_manager.cmake",
+			"C:/Users/Jacob/visualgdb/v1.5.0/zephyr/cmake/app/boilerplate.cmake",
+			"C:/Users/Jacob/visualgdb/v1.5.0/zephyr/share/zephyr-package/cmake/ZephyrConfig.cmake",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 176,
+				"parent" : 0
+			},
+			{
+				"file" : 4
+			},
+			{
+				"command" : 4,
+				"file" : 4,
+				"line" : 8,
+				"parent" : 2
+			},
+			{
+				"file" : 3,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 3,
+				"line" : 40,
+				"parent" : 4
+			},
+			{
+				"command" : 2,
+				"file" : 3,
+				"line" : 24,
+				"parent" : 5
+			},
+			{
+				"file" : 2,
+				"parent" : 6
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 639,
+				"parent" : 7
+			},
+			{
+				"file" : 1,
+				"parent" : 8
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 513,
+				"parent" : 9
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 10,
+			"id" : "merged_hex::@6890427a1f51a3e7e1df"
+		},
+		{
+			"id" : "zephyr_final::@d36e55b69c1b90fb26b2"
+		}
+	],
+	"id" : "flash::@a247f7a48b0aa9995de3",
+	"name" : "flash",
+	"paths" : 
+	{
+		"build" : "zephyr/cmake/flash",
+		"source" : "C:/Users/Jacob/visualgdb/v1.5.0/zephyr/cmake/flash"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				1
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "build/nrf5340dk_nrf5340_cpuapp/Debug/zephyr/cmake/flash/CMakeFiles/flash",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/nrf5340dk_nrf5340_cpuapp/Debug/zephyr/cmake/flash/CMakeFiles/flash.rule",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "UTILITY"
+}
