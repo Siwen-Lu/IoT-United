@@ -9,7 +9,7 @@ struct k_condvar wait_discovering_complete;
 struct k_sem gatt_read_sem;
 
 struct bt_gatt_read_params gatt_read_params;
-struct bt_gatt_write_params gatt_write_params;
+//struct bt_gatt_write_params gatt_write_params;
 
 struct bt_conn *conn_connecting;
 uint8_t conn_count;
@@ -17,7 +17,10 @@ uint8_t conn_count;
 uint8_t thingy_pattern[21] = { 0x02, 0x01, 0x06, 0x11, 0x06, 0x42, 0x00, 0x74, 0xa9, 0xff,
 	0x52, 0x10, 0x9b, 0x33, 0x49, 0x35, 0x9b, 0x00, 0x01, 0x68, 0xef };
 
+uint8_t SPEAKER_DATA[5] = { 0xDC, 0x03, 0x2C, 0x01, 0x64 };
+
 static uint8_t gatt_char_read_cb(struct bt_conn *conn, uint8_t err, struct bt_gatt_read_params *params, const void *data, uint16_t length) {
+	int key = irq_lock();
 	uint8_t battery = 0;
 	memcpy(&battery, data, 1);
 	
@@ -31,17 +34,21 @@ static uint8_t gatt_char_read_cb(struct bt_conn *conn, uint8_t err, struct bt_ga
 	
 	ConnRC.DevRec[record_index].battery_lvl = battery;
 	
+	irq_unlock(key);
+	
 	k_mutex_lock(&discovering, K_FOREVER);
 	k_condvar_signal(&wait_discovering_complete);
 	k_mutex_unlock(&discovering);
+	
 	return BT_GATT_ITER_STOP;
 }
-static uint8_t gatt_char_write_cb(struct bt_conn *conn, uint8_t err, struct bt_gatt_write_params *params) {
-	return BT_GATT_ITER_STOP;
-}
+//static uint8_t gatt_char_write_cb(struct bt_conn *conn, uint8_t err, struct bt_gatt_write_params *params) {
+//	return BT_GATT_ITER_STOP;
+//}
 
 static void discover_all_completed(struct bt_gatt_dm *dm, void *ctx)
 {
+	int key = irq_lock();
 	char uuid_str[37];
 
 	const struct bt_gatt_dm_attr *gatt_service_attr =
@@ -60,20 +67,47 @@ static void discover_all_completed(struct bt_gatt_dm *dm, void *ctx)
 	printk("%s :", addr_str);
 	printk("Found service %s\n", uuid_str);
 
-	const struct bt_gatt_dm_attr *gatt_bas_attr = bt_gatt_dm_char_by_uuid(dm, BT_UUID_DECLARE_16(0x2a19));
-	const struct bt_gatt_dm_attr *gatt_bas_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_bas_attr, BT_UUID_DECLARE_16(0x2a19));
+	const struct bt_gatt_dm_attr *gatt_bas_attr = bt_gatt_dm_char_by_uuid(dm, BAT_LVL_CHAR_UUID);
+	const struct bt_gatt_dm_attr *gatt_bas_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_bas_attr, BAT_LVL_CHAR_UUID);
 	if (gatt_bas_attr != NULL) {
 		gatt_read_params.func = gatt_char_read_cb;
 		gatt_read_params.handle_count = 1;
 		gatt_read_params.single.handle = gatt_bas_desc->handle;
 		gatt_read_params.single.offset = 0;
 		bt_gatt_read(conn, &gatt_read_params);
+		bt_gatt_dm_data_release(dm);
+		irq_unlock(key);
+		return;
 	}
+	
+	const struct bt_gatt_dm_attr *gatt_speaker_attr = bt_gatt_dm_char_by_uuid(dm, SPEAKER_CHAR_UUID);
+	const struct bt_gatt_dm_attr *gatt_speaker_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_speaker_attr, SPEAKER_CHAR_UUID);
+	if (gatt_speaker_attr != NULL) {
+
+		int err = bt_gatt_write_without_response(conn, gatt_speaker_desc->handle, SPEAKER_DATA, sizeof(SPEAKER_DATA), false);
+		
+		if (!err)
+		{
+			printk("beep\n");
+		}
+
+		k_mutex_lock(&discovering, K_FOREVER);
+		k_condvar_signal(&wait_discovering_complete);
+		k_mutex_unlock(&discovering);
+		
+		//bt_gatt_dm_data_print(dm);
+		bt_gatt_dm_data_release(dm);
+		irq_unlock(key);
+		return;
+		
+	}
+	
 	//printk("Attribute count: %d\n", attr_count);
 
 	//bt_gatt_dm_data_print(dm);
-	bt_gatt_dm_data_release(dm);
+	//bt_gatt_dm_data_release(dm);
 	//bt_gatt_dm_continue(dm, NULL);
+	irq_unlock(key);
 }
 
 static void discover_all_service_not_found(struct bt_conn *conn, void *ctx)
@@ -182,9 +216,7 @@ void device_found(const bt_addr_le_t *addr,
 		    start_scan();
 		    // Record the device but it is not connected
 		    new_rec.last_conn_timestamp = INT64_MIN;
-	    }else {
-			new_rec.last_conn_timestamp = curr_time;
-		}
+	    }
 	    insertRec(&ConnRC, new_rec);
 	}
 	
@@ -213,6 +245,10 @@ void start_scan(void)
 
 static void connected(struct bt_conn *conn, uint8_t err)
 {
+	int key = irq_lock();
+	
+	int record_index = searchAddr(&ConnRC, bt_conn_get_dst(conn));
+	
 	char addr[BT_ADDR_LE_STR_LEN];
 	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 	if (err) {
@@ -220,10 +256,14 @@ static void connected(struct bt_conn *conn, uint8_t err)
 		bt_conn_unref(conn_connecting);
 		conn_connecting = NULL;
 		start_scan();
+		
+		// Record the device but it is not connected
+		ConnRC.DevRec[record_index].last_conn_timestamp = INT64_MIN;
+		
 		return;
 	}
-
-	int key = irq_lock();
+	
+	ConnRC.DevRec[record_index].last_conn_timestamp = k_uptime_get();
 	
 	conn_count++;
 
@@ -231,7 +271,7 @@ static void connected(struct bt_conn *conn, uint8_t err)
 		start_scan();
 	}
 	
-	int record_index = searchAddr(&ConnRC, bt_conn_get_dst(conn));
+	
 	
 	if (record_index != -1)
 	{
