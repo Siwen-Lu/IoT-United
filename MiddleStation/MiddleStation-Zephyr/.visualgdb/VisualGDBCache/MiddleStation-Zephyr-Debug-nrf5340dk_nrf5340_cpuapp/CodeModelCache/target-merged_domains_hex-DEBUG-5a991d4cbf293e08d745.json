@@ -1,0 +1,124 @@
+{
+	"backtrace" : 8,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"include",
+			"include_boilerplate",
+			"find_package"
+		],
+		"files" : 
+		[
+			"C:/Users/Jacob/ncs/v1.5.0/nrf/cmake/partition_manager.cmake",
+			"C:/Users/Jacob/ncs/v1.5.0/zephyr/cmake/app/boilerplate.cmake",
+			"C:/Users/Jacob/visualgdb/v1.5.0/zephyr/share/zephyr-package/cmake/ZephyrConfig.cmake",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 3,
+				"line" : 8,
+				"parent" : 0
+			},
+			{
+				"file" : 2,
+				"parent" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 40,
+				"parent" : 2
+			},
+			{
+				"command" : 1,
+				"file" : 2,
+				"line" : 24,
+				"parent" : 3
+			},
+			{
+				"file" : 1,
+				"parent" : 4
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 639,
+				"parent" : 5
+			},
+			{
+				"file" : 0,
+				"parent" : 6
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 508,
+				"parent" : 7
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"id" : "merged_hex::@6890427a1f51a3e7e1df"
+		},
+		{
+			"id" : "hci_rpmsg_subimage::@f5912b38358e1aaccf15"
+		}
+	],
+	"id" : "merged_domains_hex::@6890427a1f51a3e7e1df",
+	"name" : "merged_domains_hex",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				1,
+				2
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 8,
+			"isGenerated" : true,
+			"path" : "build/nrf5340dk_nrf5340_cpuapp/Debug/CMakeFiles/merged_domains_hex",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/nrf5340dk_nrf5340_cpuapp/Debug/CMakeFiles/merged_domains_hex.rule",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/nrf5340dk_nrf5340_cpuapp/Debug/zephyr/merged_domains.hex.rule",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "UTILITY"
+}

@@ -90,6 +90,8 @@ static void discover_all_completed(struct bt_gatt_dm *dm, void *ctx)
 		{
 			printk("beep\n");
 		}
+		
+		bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
 
 		k_mutex_lock(&discovering, K_FOREVER);
 		k_condvar_signal(&wait_discovering_complete);
@@ -263,7 +265,6 @@ static void connected(struct bt_conn *conn, uint8_t err)
 		return;
 	}
 	
-	ConnRC.DevRec[record_index].last_conn_timestamp = k_uptime_get();
 	
 	conn_count++;
 
@@ -306,6 +307,10 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	}
 
 	conn_count--;
+	
+	int record_index = searchAddr(&ConnRC, bt_conn_get_dst(conn));
+	ConnRC.DevRec[record_index].last_conn_timestamp = k_uptime_get();
+	
 	irq_unlock(key);
 
 	printk("Disconnected (%u): %s (reason 0x%02x)\n", conn_count, addr, reason);

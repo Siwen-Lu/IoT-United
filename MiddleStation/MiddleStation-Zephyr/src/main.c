@@ -39,14 +39,19 @@ void conn_process() {
 			printk("Handling connection from %s\n", addr_str);
 			
 			struct bt_conn *curr_conn = bt_conn_lookup_addr_le(BT_ID_DEFAULT, &pNode->addr);
+
 			if (curr_conn != NULL)
 			{
+				bt_conn_unref(curr_conn);
+				
+				printk("start bas disc\n");
 				
 				// start to discover bas service & read battery level
 				k_mutex_lock(&discovering, K_MINUTES(1));
 				int err = bt_gatt_dm_start(curr_conn, BAT_SERV_UUID, &discover_all_cb, NULL);
 				if (err) {
 					printk("Failed to start discovery (err %d)\n", err);
+					bt_conn_disconnect(curr_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
 				}
 				else {
 
@@ -57,28 +62,23 @@ void conn_process() {
 				k_mutex_unlock(&discovering);
 				
 				
-				//
+				printk("start sound disc\n");
 				
 				k_mutex_lock(&discovering, K_MINUTES(1));
 				err = bt_gatt_dm_start(curr_conn, SOUND_SERV_UUID, &discover_all_cb, NULL);
 				if (err) {
 					printk("Failed to start discovery (err %d)\n", err);
+					bt_conn_disconnect(curr_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
 				}
 				else {
 
 					k_condvar_wait(&wait_discovering_complete, &discovering, K_SECONDS(30));
 
-					k_sleep(K_MSEC(500));
+					//k_sleep(K_MSEC(500));
 				}
 				k_mutex_unlock(&discovering);
-				
-				
-				
-				
-				
-				bt_conn_unref(curr_conn);
-				bt_conn_disconnect(curr_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
-				curr_conn = NULL;
+
+
 			}
 			k_free(pNode);
 			pNode = NULL;
