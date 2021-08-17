@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31512.422
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "Assets-Thingy52-Mesh", "Assets-Thingy52-Mesh.vgdbproj", "{971FA521-10A4-4BE0-B285-AB082CC4FC98}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|thingy52_nrf52832 = Debug|thingy52_nrf52832
+		Release|thingy52_nrf52832 = Release|thingy52_nrf52832
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{971FA521-10A4-4BE0-B285-AB082CC4FC98}.Debug|thingy52_nrf52832.ActiveCfg = Debug|thingy52_nrf52832
+		{971FA521-10A4-4BE0-B285-AB082CC4FC98}.Debug|thingy52_nrf52832.Build.0 = Debug|thingy52_nrf52832
+		{971FA521-10A4-4BE0-B285-AB082CC4FC98}.Release|thingy52_nrf52832.ActiveCfg = Release|thingy52_nrf52832
+		{971FA521-10A4-4BE0-B285-AB082CC4FC98}.Release|thingy52_nrf52832.Build.0 = Release|thingy52_nrf52832
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {320368AB-B1DB-4C5C-99A4-0D447B3AE62D}
+	EndGlobalSection
+EndGlobal
