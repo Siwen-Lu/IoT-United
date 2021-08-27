@@ -1,5 +1,8 @@
 #include "mesh_cmd_handler.h"
 #include <logging/log.h>
+#include "rssi_thread.h"
+#include "cmd_thread.h"
+
 LOG_MODULE_DECLARE(command);
 
 BUILD_ASSERT(BT_MESH_MODEL_BUF_LEN(BT_MESH_CHAT_CLI_OP_MESSAGE,
@@ -412,7 +415,6 @@ static void handle_chat_presence(struct bt_mesh_chat_cli *chat,
 		}
 	}
 }
-struct k_work_q command_workqueue_work_q;
 // receive broadcast from middle station and get RSSI
 static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 	struct bt_mesh_msg_ctx *ctx,
@@ -424,7 +426,13 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 	}
 	
 	/* TODO */
-
+	
+	RSSI *rssi_info = k_malloc(sizeof(RSSI));
+	rssi_info->address = ctx->addr;
+	rssi_info->rssi = ctx->recv_rssi;
+	k_work_init(&rssi_info->work, process_rssi);
+	
+	k_work_submit_to_queue(&rssi_work_q, &rssi_info->work);
 }
 
 static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,

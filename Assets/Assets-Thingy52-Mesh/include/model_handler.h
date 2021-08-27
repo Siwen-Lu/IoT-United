@@ -19,7 +19,6 @@ extern "C" {
 #endif
 
 const struct bt_mesh_comp *model_handler_init(void);
-extern struct k_work_q command_workqueue_work_q;
 #ifdef __cplusplus
 }
 #endif

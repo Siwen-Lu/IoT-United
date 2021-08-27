@@ -12,6 +12,6 @@ project(NONE)
 target_sources(app PRIVATE
 	src/main.c
 	src/eth_comms.c
-	)
+)
 target_include_directories(app PRIVATE include)
 # NORDIC SDK APP END

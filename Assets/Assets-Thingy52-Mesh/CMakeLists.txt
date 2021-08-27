@@ -16,6 +16,14 @@ target_sources(app PRIVATE
 	src/speaker_func.c
 	src/model_handler.c
 	src/mesh_cmd_handler.c
-	)
+	src/rssi_thread.c
+	include/rssi_thread.h
+	src/cmd_thread.c
+	include/cmd_thread.h
+	include/button_func.h
+	include/mesh_cmd_handler.h
+	include/mesh_light_handler.h
+	include/model_handler.h
+	include/speaker_func.h)
 target_include_directories(app PRIVATE include)
 # NORDIC SDK APP END

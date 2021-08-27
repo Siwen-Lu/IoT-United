@@ -61,7 +61,6 @@
       <EnableFastUpToDateCheck>true</EnableFastUpToDateCheck>
       <NRFConnectExtension>
         <SDKVersion>v1.6.1</SDKVersion>
-        <NetworkCPUFirmware>nRF5340-NetworkCore/build/nrf5340dk_nrf5340_cpunet/Debug/zephyr/zephyr.hex</NetworkCPUFirmware>
       </NRFConnectExtension>
     </ProjectModeSettings>
   </Build>
@@ -128,6 +127,8 @@
           <ExamineRegistersInRawFormat>true</ExamineRegistersInRawFormat>
           <DisableSignals>false</DisableSignals>
           <EnableAsyncExecutionMode>false</EnableAsyncExecutionMode>
+          <AsyncModeSupportsBreakpoints>true</AsyncModeSupportsBreakpoints>
+          <TemporaryBreakConsolidationTimeout>0</TemporaryBreakConsolidationTimeout>
           <EnableNonStopMode>false</EnableNonStopMode>
           <MaxBreakpointLimit>0</MaxBreakpointLimit>
           <EnableVerboseMode>true</EnableVerboseMode>
@@ -228,6 +229,8 @@
       <ExamineRegistersInRawFormat>true</ExamineRegistersInRawFormat>
       <DisableSignals>false</DisableSignals>
       <EnableAsyncExecutionMode>false</EnableAsyncExecutionMode>
+      <AsyncModeSupportsBreakpoints>true</AsyncModeSupportsBreakpoints>
+      <TemporaryBreakConsolidationTimeout>0</TemporaryBreakConsolidationTimeout>
       <EnableNonStopMode>false</EnableNonStopMode>
       <MaxBreakpointLimit>0</MaxBreakpointLimit>
       <EnableVerboseMode>true</EnableVerboseMode>

@@ -4,6 +4,8 @@
 #include "model_handler.h"
 #include "mesh_light_handler.h"
 #include "mesh_cmd_handler.h"
+#include "rssi_thread.h"
+#include "cmd_thread.h"
 
 extern struct led_ctx led_ctx[3];
 extern struct bt_mesh_chat_cli chat;
@@ -96,6 +98,9 @@ const struct bt_mesh_comp *model_handler_init(void)
 	for (int i = 0; i < ARRAY_SIZE(led_ctx); ++i) {
 		k_work_init_delayable(&led_ctx[i].work, led_work);
 	}
-
+	
+	init_cmd_thread();
+	init_rssi_thread();
+	
 	return &comp;
 }

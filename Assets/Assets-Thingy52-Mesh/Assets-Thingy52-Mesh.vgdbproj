@@ -129,6 +129,8 @@
           <ExamineRegistersInRawFormat>true</ExamineRegistersInRawFormat>
           <DisableSignals>false</DisableSignals>
           <EnableAsyncExecutionMode>false</EnableAsyncExecutionMode>
+          <AsyncModeSupportsBreakpoints>true</AsyncModeSupportsBreakpoints>
+          <TemporaryBreakConsolidationTimeout>0</TemporaryBreakConsolidationTimeout>
           <EnableNonStopMode>false</EnableNonStopMode>
           <MaxBreakpointLimit>0</MaxBreakpointLimit>
           <EnableVerboseMode>true</EnableVerboseMode>
@@ -167,7 +169,7 @@
       <ProjectSettingsExtension xsi:type="com.visualgdb.project.external.nrfconnect.extension">
         <BoardName>thingy52_nrf52832</BoardName>
         <OverlayFiles>
-          <string>C:/Users/Jacob/Desktop/Assets-Thingy52-Mesh/boards/thingy52.overlay</string>
+          <string>C:/Users/Jacob/Desktop/IoT-United/Assets/Assets-Thingy52-Mesh/boards/thingy52.overlay</string>
         </OverlayFiles>
       </ProjectSettingsExtension>
     </VisualGDBConfiguration>
@@ -231,6 +233,8 @@
       <ExamineRegistersInRawFormat>true</ExamineRegistersInRawFormat>
       <DisableSignals>false</DisableSignals>
       <EnableAsyncExecutionMode>false</EnableAsyncExecutionMode>
+      <AsyncModeSupportsBreakpoints>true</AsyncModeSupportsBreakpoints>
+      <TemporaryBreakConsolidationTimeout>0</TemporaryBreakConsolidationTimeout>
       <EnableNonStopMode>false</EnableNonStopMode>
       <MaxBreakpointLimit>0</MaxBreakpointLimit>
       <EnableVerboseMode>true</EnableVerboseMode>
