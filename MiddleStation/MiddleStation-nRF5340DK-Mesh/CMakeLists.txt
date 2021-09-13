@@ -12,6 +12,8 @@ project(NONE)
 target_sources(app PRIVATE
 	src/main.c
 	src/eth_comms.c
+	src/model_handler.c
+	src/chat_cli.c
 )
 target_include_directories(app PRIVATE include)
 # NORDIC SDK APP END
