@@ -464,20 +464,19 @@ static int publisher(void)
 	return r;
 }
 
-static int start_app(void)
+void start_app(void* indata1, void* indata2, void* indata3)
 {
-	int r = 0, i = 0;
+	int i = 0;
 
 	while (!CONFIG_NET_SAMPLE_APP_MAX_CONNECTIONS ||
 	       i++ < CONFIG_NET_SAMPLE_APP_MAX_CONNECTIONS) {
-		r = publisher();
+		publisher();
 
 		if (!CONFIG_NET_SAMPLE_APP_MAX_CONNECTIONS) {
 			k_sleep(K_MSEC(5000));
 		}
 	}
-
-	return r;
+	return;
 }
 
 #if defined(CONFIG_USERSPACE)
@@ -563,6 +562,6 @@ void server_init()
 	k_thread_create(&MQTT_SERVER_THREAD,
 		mqtt_server_stack_area,
 		K_THREAD_STACK_SIZEOF(mqtt_server_stack_area),
-		start_app, NULL, NULL, NULL, MQTT_THREAD_PRIORITY, 0,K_NO_WAIT);
+		&start_app, NULL, NULL, NULL, MQTT_THREAD_PRIORITY, 0,K_NO_WAIT);
 
 }
