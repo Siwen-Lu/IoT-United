@@ -60,7 +60,7 @@ void main(void)
 	}
 
 	//UNCOMMENT LATER
-	// eth_init();
+	eth_init();
 	
-	// server_init();
+	server_init();
 }

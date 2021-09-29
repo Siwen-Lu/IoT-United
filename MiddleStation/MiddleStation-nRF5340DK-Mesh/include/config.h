@@ -21,7 +21,7 @@
 #define SERVER_ADDR		"2001:db8::2"
 #else
 #define ZEPHYR_ADDR		"192.168.1.101"
-#define SERVER_ADDR		"192.168.137.1"
+#define SERVER_ADDR		"5.196.95.208"
 #endif
 #endif
 
@@ -30,19 +30,8 @@
 #define SOCKS5_PROXY_PORT	1080
 #endif
 
-#ifdef CONFIG_MQTT_LIB_TLS
-#ifdef CONFIG_MQTT_LIB_WEBSOCKET
-#define SERVER_PORT		9001
-#else
 #define SERVER_PORT		8883
-#endif /* CONFIG_MQTT_LIB_WEBSOCKET */
-#else
-#ifdef CONFIG_MQTT_LIB_WEBSOCKET
-#define SERVER_PORT		9001
-#else
-#define SERVER_PORT		1885
-#endif /* CONFIG_MQTT_LIB_WEBSOCKET */
-#endif
+
 
 #define APP_CONNECT_TIMEOUT_MS	2000
 #define APP_SLEEP_MSECS		500

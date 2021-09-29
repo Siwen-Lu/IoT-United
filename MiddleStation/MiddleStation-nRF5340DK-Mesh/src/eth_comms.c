@@ -54,7 +54,7 @@ static APP_BMEM bool connected;
 
 #include "test_certs.h"
 
-#define TLS_SNI_HOSTNAME "localhost"
+#define TLS_SNI_HOSTNAME "192.169.137.1"
 #define APP_CA_CERT_TAG 1
 #define APP_PSK_TAG 2
 
@@ -71,14 +71,19 @@ static int tls_init(void)
 {
 	int err = -EINVAL;
 
-#if defined(MBEDTLS_X509_CRT_PARSE_C) || defined(CONFIG_NET_SOCKETS_OFFLOAD)
+// #if defined(MBEDTLS_X509_CRT_PARSE_C) || defined(CONFIG_NET_SOCKETS_OFFLOAD)
 	err = tls_credential_add(APP_CA_CERT_TAG, TLS_CREDENTIAL_CA_CERTIFICATE,
 				 ca_certificate, sizeof(ca_certificate));
+
+	for (int i = 0;10 > i;i++) {
+		printk("fuck %d\n",sizeof(ca_certificate));
+	}
+
 	if (err < 0) {
 		LOG_ERR("Failed to register public certificate: %d", err);
 		return err;
 	}
-#endif
+// #endif
 
 #if defined(MBEDTLS_KEY_EXCHANGE_SOME_PSK_ENABLED)
 	err = tls_credential_add(APP_PSK_TAG, TLS_CREDENTIAL_PSK,
@@ -148,7 +153,6 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 
 		connected = true;
 		LOG_INF("MQTT client connected!");
-
 		break;
 
 	case MQTT_EVT_DISCONNECT:
@@ -202,6 +206,8 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 	case MQTT_EVT_PINGRESP:
 		LOG_INF("PINGRESP packet");
 		break;
+
+
 
 	default:
 		break;
@@ -307,7 +313,7 @@ static void client_init(struct mqtt_client *client)
 
 	struct mqtt_sec_config *tls_config = &client->transport.tls.config;
 
-	tls_config->peer_verify = TLS_PEER_VERIFY_REQUIRED;
+	tls_config->peer_verify = TLS_PEER_VERIFY_NONE;
 	tls_config->cipher_list = NULL;
 	tls_config->sec_tag_list = m_sec_tags;
 	tls_config->sec_tag_count = ARRAY_SIZE(m_sec_tags);
@@ -558,10 +564,15 @@ struct k_thread MQTT_SERVER_THREAD;
 
 void server_init()
 {
+
+#if defined(CONFIG_MQTT_LIB_TLS)
+	int rc;
+	rc = tls_init();
+
+#endif
 	//todo: some preparation
 	k_thread_create(&MQTT_SERVER_THREAD,
 		mqtt_server_stack_area,
 		K_THREAD_STACK_SIZEOF(mqtt_server_stack_area),
 		&start_app, NULL, NULL, NULL, MQTT_THREAD_PRIORITY, 0,K_NO_WAIT);
-
 }
