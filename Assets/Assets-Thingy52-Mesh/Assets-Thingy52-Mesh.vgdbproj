@@ -12,9 +12,9 @@
     <ToolchainID>
       <ID>com.visualgdb.arm-eabi</ID>
       <Version>
-        <GCC>9.3.1</GCC>
-        <GDB>9.2.0</GDB>
-        <Revision>2</Revision>
+        <GCC>10.3.1</GCC>
+        <GDB>10.2.90</GDB>
+        <Revision>1</Revision>
       </Version>
     </ToolchainID>
     <RelativeSourceDirectory />
@@ -85,8 +85,8 @@
   <ImportedPropertySheets />
   <CodeSense>
     <Enabled>Unknown</Enabled>
-    <CFLAGS>-Wno-deprecated-declarations</CFLAGS>
-    <CXXFLAGS>-Wno-deprecated-declarations</CXXFLAGS>
+    <CFLAGS>-Wno-deprecated-declarations -Wno-incompatible-pointer-types</CFLAGS>
+    <CXXFLAGS>-Wno-deprecated-declarations -Wno-incompatible-pointer-types</CXXFLAGS>
     <ExtraSettings>
       <HideErrorsInSystemHeaders>true</HideErrorsInSystemHeaders>
       <SupportLightweightReferenceAnalysis>true</SupportLightweightReferenceAnalysis>
@@ -169,7 +169,7 @@
       <ProjectSettingsExtension xsi:type="com.visualgdb.project.external.nrfconnect.extension">
         <BoardName>thingy52_nrf52832</BoardName>
         <OverlayFiles>
-          <string>C:/Users/Jacob/Desktop/IoT-United/Assets/Assets-Thingy52-Mesh/boards/thingy52.overlay</string>
+          <string>C:/IoT-United/Assets/Assets-Thingy52-Mesh/boards/thingy52.overlay</string>
         </OverlayFiles>
       </ProjectSettingsExtension>
     </VisualGDBConfiguration>

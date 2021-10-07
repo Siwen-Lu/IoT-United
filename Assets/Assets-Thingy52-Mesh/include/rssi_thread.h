@@ -12,7 +12,16 @@ typedef struct RSSI_INFO
 	int8_t rssi;
 }RSSI;
 
+typedef struct rssi_buffer
+{
+	uint16_t address;
+	int8_t rssi;
+
+}rssi_buffer;
+
+extern rssi_buffer nearest_three[3];
 extern struct k_work_q rssi_work_q;
 void init_rssi_thread();
 void process_rssi(struct k_work *item);
+int getNearestRecordIndex();
 #endif

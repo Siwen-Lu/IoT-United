@@ -19,8 +19,6 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(chat);
 
-static const struct shell *chat_shell;
-
 /******************************************************************************/
 /*************************** Health server setup ******************************/
 /******************************************************************************/
@@ -164,16 +162,17 @@ static void handle_chat_presence(struct bt_mesh_chat_cli *chat,
 {
 	if (address_is_local(chat->model, ctx->addr)) {
 		if (address_is_unicast(ctx->recv_dst)) {
-			shell_print(chat_shell, "<you> are %s",
+			printk("<you> are %s",
 				    presence_string[presence]);
 		}
 	} else {
 		if (address_is_unicast(ctx->recv_dst)) {
-			shell_print(chat_shell, "<0x%04X> is %s", ctx->addr,
+			printk("<0x%04X> is %s",
+				ctx->addr,
 				    presence_string[presence]);
 		} else if (presence_cache_entry_check_and_update(ctx->addr,
 								 presence)) {
-			shell_print(chat_shell, "<0x%04X> is now %s",
+			printk("<0x%04X> is now %s",
 				    ctx->addr,
 				    presence_string[presence]);
 		}
@@ -189,7 +188,7 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 		return;
 	}
 
-	shell_print(chat_shell, "<0x%04X>: %s", ctx->addr, msg);
+	printk("<0x%04X>: %s", ctx->addr, msg);
 }
 
 static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
@@ -201,13 +200,13 @@ static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 		return;
 	}
 
-	shell_print(chat_shell, "<0x%04X>: *you* %s", ctx->addr, msg);
+	printk("<0x%04X>: *you* %s", ctx->addr, msg);
 }
 
 static void handle_chat_message_reply(struct bt_mesh_chat_cli *chat,
 				      struct bt_mesh_msg_ctx *ctx)
 {
-	shell_print(chat_shell, "<0x%04X> received the message", ctx->addr);
+	printk("<0x%04X> received the message", ctx->addr);
 }
 
 static const struct bt_mesh_chat_cli_handlers chat_handlers = {
@@ -236,16 +235,12 @@ static struct bt_mesh_elem elements[] = {
 static void print_client_status(void)
 {
 	if (!bt_mesh_is_provisioned()) {
-		shell_print(chat_shell,
-			    "The mesh node is not provisioned. Please provision the mesh node before using the chat.");
+		printk("The mesh node is not provisioned. Please provision the mesh node before using the chat.");
 	} else {
-		shell_print(chat_shell,
-			    "The mesh node is provisioned. The client address is 0x%04x.",
-			    bt_mesh_model_elem(chat.model)->addr);
+		printk("The mesh node is provisioned. The client address is 0x%04x.", bt_mesh_model_elem(chat.model)->addr);
 	}
 
-	shell_print(chat_shell, "Current presence: %s",
-		    presence_string[chat.presence]);
+	printk("Current presence: %s", presence_string[chat.presence]);
 }
 
 static const struct bt_mesh_comp comp = {
@@ -257,165 +252,147 @@ static const struct bt_mesh_comp comp = {
 /******************************************************************************/
 /******************************** Chat shell **********************************/
 /******************************************************************************/
-static int cmd_status(const struct shell *shell, size_t argc, char *argv[])
+//static int cmd_status(const struct shell *shell, size_t argc, char *argv[])
+//{
+//	print_client_status();
+//
+//	return 0;
+//}
+//
+//static int cmd_message(const struct shell *shell, size_t argc, char *argv[])
+//{
+//	int err;
+//
+//	if (argc < 2) {
+//		return -EINVAL;
+//	}
+//
+//	err = bt_mesh_chat_cli_message_send(&chat, argv[1]);
+//	if (err) {
+//		LOG_WRN("Failed to send message: %d", err);
+//	}
+//
+//	/* Print own messages in the chat. */
+//	shell_print(shell, "<you>: %s", argv[1]);
+//
+//	return 0;
+//}
+//
+//static int cmd_private_message(const struct shell *shell, size_t argc,
+//			       char *argv[])
+//{
+//	uint16_t addr;
+//	int err;
+//
+//	if (argc < 3) {
+//		return -EINVAL;
+//	}
+//
+//	addr = strtol(argv[1], NULL, 0);
+//
+//	/* Print own message to the chat. */
+//	shell_print(shell, "<you>: *0x%04X* %s", addr, argv[2]);
+//
+//	err = bt_mesh_chat_cli_private_message_send(&chat, addr, argv[2]);
+//	if (err) {
+//		LOG_WRN("Failed to publish message: %d", err);
+//	}
+//
+//	return 0;
+//}
+//
+//static int cmd_presence_set(const struct shell *shell, size_t argc,
+//			    char *argv[])
+//{
+//	size_t i;
+//
+//	if (argc < 2) {
+//		return -EINVAL;
+//	}
+//
+//	for (i = 0; i < ARRAY_SIZE(presence_string); i++) {
+//		if (!strcmp(argv[1], presence_string[i])) {
+//			enum bt_mesh_chat_cli_presence presence;
+//			int err;
+//
+//			presence = i;
+//
+//			err = bt_mesh_chat_cli_presence_set(&chat, presence);
+//			if (err) {
+//				LOG_WRN("Failed to update presence: %d", err);
+//			}
+//
+//			/* Print own presence in the chat. */
+//			shell_print(shell, "You are now %s",
+//				    presence_string[presence]);
+//
+//			return 0;
+//		}
+//	}
+//
+//	shell_print(shell,
+//		    "Unknown presence status: %s. Possible presence statuses:",
+//		    argv[1]);
+//	for (i = 0; i < ARRAY_SIZE(presence_string); i++) {
+//		shell_print(shell, "%s", presence_string[i]);
+//	}
+//
+//	return 0;
+//}
+//
+//static int cmd_presence_get(const struct shell *shell, size_t argc,
+//			    char *argv[])
+//{
+//	uint16_t addr;
+//	int err;
+//
+//	if (argc < 2) {
+//		return -EINVAL;
+//	}
+//
+//	addr = strtol(argv[1], NULL, 0);
+//
+//	err = bt_mesh_chat_cli_presence_get(&chat, addr);
+//	if (err) {
+//		LOG_WRN("Failed to publish message: %d", err);
+//	}
+//
+//	return 0;
+//}
+
+
+void rssiBoardcasting(struct k_timer *dummy)
 {
-	print_client_status();
+	if (chat.model->keys[0] == 0xffff)
+		return;
+	
+	uint8_t msg[4] = { 0x00, 0x00, 0x00, 0x01 };
+	
+	struct bt_mesh_msg_ctx ctx = {
+		.addr = 0xC001,
+		.app_idx = chat.model->keys[0],
+		.send_ttl = 0,
+		.send_rel = false,
+	};
 
-	return 0;
-}
+	BT_MESH_MODEL_BUF_DEFINE(buf,
+		BT_MESH_CHAT_CLI_OP_MESSAGE,
+		BT_MESH_CHAT_CLI_MSG_MAXLEN_MESSAGE);
+	bt_mesh_model_msg_init(&buf, BT_MESH_CHAT_CLI_OP_MESSAGE);
 
-static int cmd_message(const struct shell *shell, size_t argc, char *argv[])
-{
-	int err;
+	net_buf_simple_add_mem(&buf,
+		msg,
+		strnlen(msg,
+			CONFIG_BT_MESH_CHAT_CLI_MESSAGE_LENGTH));
+	net_buf_simple_add_u8(&buf, '\0');
 
-	if (argc < 2) {
-		return -EINVAL;
-	}
-
-	err = bt_mesh_chat_cli_message_send(&chat, argv[1]);
+	int err = bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
 	if (err) {
-		LOG_WRN("Failed to send message: %d", err);
+		printk("failed to send message: %d", err);
 	}
-
-	/* Print own messages in the chat. */
-	shell_print(shell, "<you>: %s", argv[1]);
-
-	return 0;
 }
 
-static int cmd_private_message(const struct shell *shell, size_t argc,
-			       char *argv[])
-{
-	uint16_t addr;
-	int err;
-
-	if (argc < 3) {
-		return -EINVAL;
-	}
-
-	addr = strtol(argv[1], NULL, 0);
-
-	/* Print own message to the chat. */
-	shell_print(shell, "<you>: *0x%04X* %s", addr, argv[2]);
-
-	err = bt_mesh_chat_cli_private_message_send(&chat, addr, argv[2]);
-	if (err) {
-		LOG_WRN("Failed to publish message: %d", err);
-	}
-
-	return 0;
-}
-
-static int cmd_presence_set(const struct shell *shell, size_t argc,
-			    char *argv[])
-{
-	size_t i;
-
-	if (argc < 2) {
-		return -EINVAL;
-	}
-
-	for (i = 0; i < ARRAY_SIZE(presence_string); i++) {
-		if (!strcmp(argv[1], presence_string[i])) {
-			enum bt_mesh_chat_cli_presence presence;
-			int err;
-
-			presence = i;
-
-			err = bt_mesh_chat_cli_presence_set(&chat, presence);
-			if (err) {
-				LOG_WRN("Failed to update presence: %d", err);
-			}
-
-			/* Print own presence in the chat. */
-			shell_print(shell, "You are now %s",
-				    presence_string[presence]);
-
-			return 0;
-		}
-	}
-
-	shell_print(shell,
-		    "Unknown presence status: %s. Possible presence statuses:",
-		    argv[1]);
-	for (i = 0; i < ARRAY_SIZE(presence_string); i++) {
-		shell_print(shell, "%s", presence_string[i]);
-	}
-
-	return 0;
-}
-
-static int cmd_presence_get(const struct shell *shell, size_t argc,
-			    char *argv[])
-{
-	uint16_t addr;
-	int err;
-
-	if (argc < 2) {
-		return -EINVAL;
-	}
-
-	addr = strtol(argv[1], NULL, 0);
-
-	err = bt_mesh_chat_cli_presence_get(&chat, addr);
-	if (err) {
-		LOG_WRN("Failed to publish message: %d", err);
-	}
-
-	return 0;
-}
-
-SHELL_STATIC_SUBCMD_SET_CREATE(presence_cmds,
-	SHELL_CMD_ARG(set, NULL,
-		      "Set presence of the current client <presence: available, away, dnd or inactive>",
-		      cmd_presence_set, 2, 0),
-	SHELL_CMD_ARG(get, NULL,
-		      "Get presence status of the remote node <node>",
-		      cmd_presence_get, 2, 0),
-	SHELL_SUBCMD_SET_END
-);
-
-static int cmd_presence(const struct shell *shell, size_t argc, char *argv[])
-{
-	if (argc == 1) {
-		shell_help(shell);
-		/* shell returns 1 when help is printed */
-		return 1;
-	}
-
-	if (argc != 3) {
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
-SHELL_STATIC_SUBCMD_SET_CREATE(chat_cmds,
-	SHELL_CMD_ARG(status, NULL, "Print client status", cmd_status, 1, 0),
-	SHELL_CMD(presence, &presence_cmds, "Presence commands", cmd_presence),
-	SHELL_CMD_ARG(private, NULL,
-		      "Send a private text message to a client <node> <message>",
-		      cmd_private_message, 3, 0),
-	SHELL_CMD_ARG(msg, NULL, "Send a text message to the chat <message>",
-		      cmd_message, 2, 0),
-	SHELL_SUBCMD_SET_END
-);
-
-static int cmd_chat(const struct shell *shell, size_t argc, char **argv)
-{
-	if (argc == 1) {
-		shell_help(shell);
-		/* shell returns 1 when help is printed */
-		return 1;
-	}
-
-	shell_error(shell, "%s unknown parameter: %s", argv[0], argv[1]);
-
-	return -EINVAL;
-}
-
-SHELL_CMD_ARG_REGISTER(chat, &chat_cmds, "Bluetooth Mesh Chat Client commands",
-		       cmd_chat, 1, 1);
+K_TIMER_DEFINE(rssi_timer, rssiBoardcasting, NULL);
 
 /******************************************************************************/
 /******************************** Public API **********************************/
@@ -424,8 +401,9 @@ const struct bt_mesh_comp *model_handler_init(void)
 {
 	k_work_init_delayable(&attention_blink_work, attention_blink);
 
-	chat_shell = shell_backend_uart_get_ptr();
-	shell_print(chat_shell, ">>> Bluetooth Mesh Chat sample <<<");
-
+	printk("Starting BLE Mesh\n");
+	
+	k_timer_start(&rssi_timer, K_SECONDS(5), K_SECONDS(1));
+	
 	return &comp;
 }

@@ -59,8 +59,8 @@ void main(void)
 		printk("Bluetooth init failed (err %d)\n", err);
 	}
 
-	//UNCOMMENT LATER
-	// eth_init();
+	eth_init();
 	
-	// server_init();
+	//UNCOMMENT LATER
+	//server_init();
 }

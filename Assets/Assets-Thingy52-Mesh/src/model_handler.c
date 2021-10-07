@@ -10,6 +10,8 @@
 extern struct led_ctx led_ctx[3];
 extern struct bt_mesh_chat_cli chat;
 
+extern rssi_buffer nearest_three[3];
+
 static void led_work(struct k_work *work)
 {
 	struct led_ctx *led = CONTAINER_OF(work, struct led_ctx, work.work);
@@ -91,6 +93,51 @@ static const struct bt_mesh_comp comp = {
 	.elem_count = ARRAY_SIZE(elements),
 };
 
+
+void uploadSelfLocation(struct k_timer *dummy)
+{
+	if (chat.model->keys[0] == 0xffff)
+		return;
+	
+	int i = getNearestRecordIndex();
+	if (nearest_three[i].rssi <= -120)
+		return;
+	
+	uint8_t msg[12] = {0};
+	int x = 0;
+	for (int n = 0; n < 12; n+=3)
+	{
+		memcpy(&msg[n], &nearest_three[x].address, 2);
+		memcpy(&msg[2], &nearest_three[x].rssi, 1);
+		x++;
+	}
+	
+	struct bt_mesh_msg_ctx ctx = {
+		.addr = nearest_three[i].address,
+		.app_idx = chat.model->keys[0],
+		.send_ttl = 1,
+		.send_rel = false,
+	};
+
+	BT_MESH_MODEL_BUF_DEFINE(buf,
+		BT_MESH_CHAT_CLI_OP_PRIVATE_MESSAGE,
+		BT_MESH_CHAT_CLI_MSG_MAXLEN_MESSAGE);
+	bt_mesh_model_msg_init(&buf, BT_MESH_CHAT_CLI_OP_PRIVATE_MESSAGE);
+
+	net_buf_simple_add_mem(&buf,
+		msg,
+		strnlen(msg,
+			CONFIG_BT_MESH_CHAT_CLI_MESSAGE_LENGTH));
+	net_buf_simple_add_u8(&buf, '\0');
+
+	int err = bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
+	if (err) {
+		printk("failed to send locating message: %d", err);
+	}
+}
+
+K_TIMER_DEFINE(rssi_timer, uploadSelfLocation, NULL);
+
 const struct bt_mesh_comp *model_handler_init(void)
 {
 	k_work_init_delayable(&attention_blink_work, attention_blink);
@@ -101,6 +148,8 @@ const struct bt_mesh_comp *model_handler_init(void)
 	
 	init_cmd_thread();
 	init_rssi_thread();
+	
+	k_timer_start(&rssi_timer, K_SECONDS(10), K_SECONDS(5));
 	
 	return &comp;
 }
