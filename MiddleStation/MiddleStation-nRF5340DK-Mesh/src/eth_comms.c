@@ -71,19 +71,13 @@ static int tls_init(void)
 {
 	int err = -EINVAL;
 
-// #if defined(MBEDTLS_X509_CRT_PARSE_C) || defined(CONFIG_NET_SOCKETS_OFFLOAD)
 	err = tls_credential_add(APP_CA_CERT_TAG, TLS_CREDENTIAL_CA_CERTIFICATE,
 				 ca_certificate, sizeof(ca_certificate));
-
-	for (int i = 0;10 > i;i++) {
-		printk("fuck %d\n",sizeof(ca_certificate));
-	}
 
 	if (err < 0) {
 		LOG_ERR("Failed to register public certificate: %d", err);
 		return err;
 	}
-// #endif
 
 #if defined(MBEDTLS_KEY_EXCHANGE_SOME_PSK_ENABLED)
 	err = tls_credential_add(APP_PSK_TAG, TLS_CREDENTIAL_PSK,
@@ -152,6 +146,7 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 		}
 
 		connected = true;
+		
 		LOG_INF("MQTT client connected!");
 		break;
 
@@ -169,7 +164,7 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 			break;
 		}
 
-		LOG_INF("PUBACK packet id: %u", evt->param.puback.message_id);
+		// LOG_INF("PUBACK packet id: %u", evt->param.puback.message_id);
 
 		break;
 
@@ -179,7 +174,7 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 			break;
 		}
 
-		LOG_INF("PUBREC packet id: %u", evt->param.pubrec.message_id);
+		// LOG_INF("PUBREC packet id: %u", evt->param.pubrec.message_id);
 
 		const struct mqtt_pubrel_param rel_param = {
 			.message_id = evt->param.pubrec.message_id
@@ -189,7 +184,6 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 		if (err != 0) {
 			LOG_ERR("Failed to send MQTT PUBREL: %d", err);
 		}
-
 		break;
 
 	case MQTT_EVT_PUBCOMP:
@@ -198,17 +192,23 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 			break;
 		}
 
-		LOG_INF("PUBCOMP packet id: %u",
-			evt->param.pubcomp.message_id);
+		// LOG_INF("PUBCOMP packet id: %u",
+		// 	evt->param.pubcomp.message_id);
 
 		break;
 
 	case MQTT_EVT_PINGRESP:
-		LOG_INF("PINGRESP packet");
+		// LOG_INF("PINGRESP packet");
 		break;
 
+	case MQTT_EVT_SUBACK:
+		if (evt->result != 0) {
+			LOG_ERR("MQTT SUBACK error: %d", evt->result);
+			break;
+		}
 
-
+		// LOG_INF("SUBACK packet id: %u", evt->param.suback.message_id);
+		break;
 	default:
 		break;
 	}
@@ -224,7 +224,7 @@ static char *get_mqtt_payload(enum mqtt_qos qos)
 //change this to set the topic
 static char *get_mqtt_topic(void)
 {
-	return "/device/123/rssi";
+	return CONFIG_MQTT_PUB_TOPIC;
 }
 
 static int publish(struct mqtt_client *client, enum mqtt_qos qos)
@@ -243,6 +243,32 @@ static int publish(struct mqtt_client *client, enum mqtt_qos qos)
 	param.retain_flag = 0U;
 
 	return mqtt_publish(client, &param);
+}
+
+/**@brief Function to subscribe to the configured topic
+ */
+static int subscribe(struct mqtt_client *client)
+{
+	int rc;
+	struct mqtt_topic topic;
+	struct mqtt_subscription_list sub;
+
+	topic.topic.utf8 = (uint8_t *)CONFIG_MQTT_SUB_TOPIC;
+	topic.topic.size = strlen(topic.topic.utf8);
+	topic.qos = MQTT_QOS_1_AT_LEAST_ONCE;
+	sub.list = &topic;
+	sub.list_count = 1U;
+	sub.message_id = sys_rand32_get();
+
+	rc = mqtt_subscribe(&client_ctx, &sub);
+	if (rc != 0) {
+		return rc;
+	}
+
+	// wait(APP_SLEEP_MSECS);
+	// mqtt_input(&client_ctx);
+
+	return rc;
 }
 
 #define RC_STR(rc) ((rc) == 0 ? "OK" : "ERROR")
@@ -395,6 +421,13 @@ static int process_mqtt_and_sleep(struct mqtt_client *client, int timeout)
 				PRINT_RESULT("mqtt_input", rc);
 				return rc;
 			}
+
+			//decoding subscribing packet
+			char subscribe_packet[APP_MQTT_BUFFER_SIZE];
+			if (mqtt_read_publish_payload(client,subscribe_packet,sizeof(subscribe_packet)) > 0) {
+				char * inst = strtok(subscribe_packet," "); 
+				printk("inst = %s\n",inst);
+			}
 		}
 
 		rc = mqtt_live(client);
@@ -411,77 +444,54 @@ static int process_mqtt_and_sleep(struct mqtt_client *client, int timeout)
 
 		remaining = timeout + start_time - k_uptime_get();
 	}
-
 	return 0;
 }
 
+void periodic_pub_handler(struct k_work *work)
+{
+    /* do the processing that needs to be done periodically */
+	publish(&client_ctx, MQTT_QOS_2_EXACTLY_ONCE);
+}
+
+
+K_WORK_DEFINE(periodic_pub, periodic_pub_handler);
+
+void pub_timer_handler(struct k_timer *dummy)
+{
+    k_work_submit(&periodic_pub);
+}
+
+K_TIMER_DEFINE(pub_timer, pub_timer_handler, NULL);
+
 #define SUCCESS_OR_EXIT(rc) { if (rc != 0) { return 1; } }
 #define SUCCESS_OR_BREAK(rc) { if (rc != 0) { break; } }
-
 static int publisher(void)
 {
-	int i, rc, r = 0;
+	int rc, r = 0;
 
+do_connect:
 	LOG_INF("attempting to connect: ");
 	rc = try_to_connect(&client_ctx);
 	PRINT_RESULT("try_to_connect", rc);
-	SUCCESS_OR_EXIT(rc);
 
-	i = 0;
-	while (connected) {
-		r = -1;
-
-		rc = mqtt_ping(&client_ctx);
-		PRINT_RESULT("mqtt_ping", rc);
-		SUCCESS_OR_BREAK(rc);
-
-		rc = process_mqtt_and_sleep(&client_ctx, APP_SLEEP_MSECS);
-		SUCCESS_OR_BREAK(rc);
-
-		rc = publish(&client_ctx, MQTT_QOS_0_AT_MOST_ONCE);
-		PRINT_RESULT("mqtt_publish", rc);
-		SUCCESS_OR_BREAK(rc);
-
-		rc = process_mqtt_and_sleep(&client_ctx, APP_SLEEP_MSECS);
-		SUCCESS_OR_BREAK(rc);
-
-		// rc = publish(&client_ctx, MQTT_QOS_1_AT_LEAST_ONCE);
-		// PRINT_RESULT("mqtt_publish", rc);
-		// SUCCESS_OR_BREAK(rc);
-
-		// rc = process_mqtt_and_sleep(&client_ctx, APP_SLEEP_MSECS);
-		// SUCCESS_OR_BREAK(rc);
-
-		// rc = publish(&client_ctx, MQTT_QOS_2_EXACTLY_ONCE);
-		// PRINT_RESULT("mqtt_publish", rc);
-		// SUCCESS_OR_BREAK(rc);
-
-		// rc = process_mqtt_and_sleep(&client_ctx, APP_SLEEP_MSECS);
-		// SUCCESS_OR_BREAK(rc);
-
-		// r = 0;
+	k_timer_start(&pub_timer,K_MSEC(2*APP_SLEEP_MSECS),K_MSEC(2*APP_SLEEP_MSECS));
+	subscribe(&client_ctx);	
+	while(1) {
+		process_mqtt_and_sleep(&client_ctx,APP_SLEEP_MSECS);
 	}
 
 	rc = mqtt_disconnect(&client_ctx);
 	PRINT_RESULT("mqtt_disconnect", rc);
-
-	LOG_INF("Bye!");
-
+	r = 0;
+	goto do_connect;
 	return r;
 }
 
 void start_app(void* indata1, void* indata2, void* indata3)
 {
-	int i = 0;
 
-	while (!CONFIG_NET_SAMPLE_APP_MAX_CONNECTIONS ||
-	       i++ < CONFIG_NET_SAMPLE_APP_MAX_CONNECTIONS) {
-		publisher();
+	publisher();
 
-		if (!CONFIG_NET_SAMPLE_APP_MAX_CONNECTIONS) {
-			k_sleep(K_MSEC(5000));
-		}
-	}
 	return;
 }
 

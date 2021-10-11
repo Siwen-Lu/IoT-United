@@ -45,5 +45,9 @@
 #define CONFIG_NET_SAMPLE_APP_MAX_ITERATIONS 10
 #define CONFIG_NET_SAMPLE_APP_MAX_CONNECTIONS 10
 
+//Changeable
+#define CONFIG_MQTT_SUB_TOPIC "device/123/alarm"
+#define CONFIG_MQTT_PUB_TOPIC "device/123/rssi"
+
 #endif
 

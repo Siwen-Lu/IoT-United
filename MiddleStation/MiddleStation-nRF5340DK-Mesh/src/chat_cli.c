@@ -29,6 +29,13 @@ static void encode_presence(struct net_buf_simple *buf,
 	net_buf_simple_add_u8(buf, presence);
 }
 
+size_t strnlen(const char *s, size_t maxlen) {
+    size_t len = 0;
+    if(s)
+        for(char c = *s; (len < maxlen && c != '\0'); c = *++s) len++;
+    return len;
+}
+
 static const uint8_t *extract_msg(struct net_buf_simple *buf)
 {
 	buf->data[buf->len - 1] = '\0';
