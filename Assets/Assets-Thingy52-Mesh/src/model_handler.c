@@ -98,24 +98,23 @@ void uploadSelfLocation(struct k_timer *dummy)
 {
 	if (chat.model->keys[0] == 0xffff)
 		return;
-	
-	int i = getNearestRecordIndex();
-	if (nearest_three[i].rssi <= -120)
+	rssi_buffer rbuf[3];
+	int i = getRecords(&rbuf);
+	if (rbuf[i].rssi <= -120 || i == -1)
 		return;
 	
-	uint8_t msg[12] = {0};
+	uint8_t msg[9] = {0};
 	int x = 0;
-	for (int n = 0; n < 12; n+=3)
+	for (int n = 0; n < 9; n+=3)
 	{
-		memcpy(&msg[n], &nearest_three[x].address, 2);
-		memcpy(&msg[2], &nearest_three[x].rssi, 1);
+		memcpy(&msg[n], &rbuf[x].address, 2);
+		memcpy(&msg[n + 2], &rbuf[x].rssi, 1);
 		x++;
 	}
-	
 	struct bt_mesh_msg_ctx ctx = {
-		.addr = nearest_three[i].address,
+		.addr = rbuf[i].address,
 		.app_idx = chat.model->keys[0],
-		.send_ttl = 1,
+		.send_ttl = 0,
 		.send_rel = false,
 	};
 
@@ -124,16 +123,12 @@ void uploadSelfLocation(struct k_timer *dummy)
 		BT_MESH_CHAT_CLI_MSG_MAXLEN_MESSAGE);
 	bt_mesh_model_msg_init(&buf, BT_MESH_CHAT_CLI_OP_PRIVATE_MESSAGE);
 
-	net_buf_simple_add_mem(&buf,
-		msg,
-		strnlen(msg,
-			CONFIG_BT_MESH_CHAT_CLI_MESSAGE_LENGTH));
+	net_buf_simple_add_mem(&buf, msg, 9);
 	net_buf_simple_add_u8(&buf, '\0');
-
-	int err = bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
-	if (err) {
-		printk("failed to send locating message: %d", err);
-	}
+	
+	bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
+	
+	init_buffer();
 }
 
 K_TIMER_DEFINE(rssi_timer, uploadSelfLocation, NULL);

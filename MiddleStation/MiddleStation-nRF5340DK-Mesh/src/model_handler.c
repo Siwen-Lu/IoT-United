@@ -1,9 +1,3 @@
-/*
- * Copyright (c) 2019 Nordic Semiconductor ASA
- *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
- */
-
 #include <stdio.h>
 
 #include <bluetooth/bluetooth.h>
@@ -162,17 +156,17 @@ static void handle_chat_presence(struct bt_mesh_chat_cli *chat,
 {
 	if (address_is_local(chat->model, ctx->addr)) {
 		if (address_is_unicast(ctx->recv_dst)) {
-			printk("<you> are %s",
+			printk("<you> are %s\n",
 				    presence_string[presence]);
 		}
 	} else {
 		if (address_is_unicast(ctx->recv_dst)) {
-			printk("<0x%04X> is %s",
+			printk("<0x%04X> is %s\n",
 				ctx->addr,
 				    presence_string[presence]);
 		} else if (presence_cache_entry_check_and_update(ctx->addr,
 								 presence)) {
-			printk("<0x%04X> is now %s",
+			printk("<0x%04X> is now %s\n",
 				    ctx->addr,
 				    presence_string[presence]);
 		}
@@ -188,7 +182,7 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 		return;
 	}
 
-	printk("<0x%04X>: %s", ctx->addr, msg);
+	printk("<0x%04X>: %s\n", ctx->addr, msg);
 }
 
 static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
@@ -199,14 +193,32 @@ static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 	if (address_is_local(chat->model, ctx->addr)) {
 		return;
 	}
-
-	printk("<0x%04X>: *you* %s", ctx->addr, msg);
+	
+	uint16_t middleAddr1;
+	uint16_t middleAddr2;
+	uint16_t middleAddr3;
+	int8_t middleRSSI1;
+	int8_t middleRSSI2;
+	int8_t middleRSSI3;
+	
+	memcpy(&middleAddr1, &msg[0], 2);
+	memcpy(&middleRSSI1, &msg[2], 1);
+	memcpy(&middleAddr2, &msg[3], 2);
+	memcpy(&middleRSSI2, &msg[5], 1);
+	memcpy(&middleAddr3, &msg[6], 2);
+	memcpy(&middleRSSI3, &msg[8], 1);
+	
+	printk("%04X:%d\n", middleAddr1, middleRSSI1);
+	printk("%04X:%d\n", middleAddr2, middleRSSI2);
+	printk("%04X:%d\n", middleAddr3, middleRSSI3);
+	
+	// todo
 }
 
 static void handle_chat_message_reply(struct bt_mesh_chat_cli *chat,
 				      struct bt_mesh_msg_ctx *ctx)
 {
-	printk("<0x%04X> received the message", ctx->addr);
+	printk("<0x%04X> received the message\n", ctx->addr);
 }
 
 static const struct bt_mesh_chat_cli_handlers chat_handlers = {
@@ -235,12 +247,12 @@ static struct bt_mesh_elem elements[] = {
 static void print_client_status(void)
 {
 	if (!bt_mesh_is_provisioned()) {
-		printk("The mesh node is not provisioned. Please provision the mesh node before using the chat.");
+		printk("The mesh node is not provisioned. Please provision the mesh node before using the chat.\n");
 	} else {
-		printk("The mesh node is provisioned. The client address is 0x%04x.", bt_mesh_model_elem(chat.model)->addr);
+		printk("The mesh node is provisioned. The client address is 0x%04x.\n", bt_mesh_model_elem(chat.model)->addr);
 	}
 
-	printk("Current presence: %s", presence_string[chat.presence]);
+	printk("Current presence: %s\n", presence_string[chat.presence]);
 }
 
 static const struct bt_mesh_comp comp = {
@@ -388,7 +400,7 @@ void rssiBoardcasting(struct k_timer *dummy)
 
 	int err = bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
 	if (err) {
-		printk("failed to send message: %d", err);
+		printk("failed to send message: %d\n", err);
 	}
 }
 

@@ -23,5 +23,6 @@ extern rssi_buffer nearest_three[3];
 extern struct k_work_q rssi_work_q;
 void init_rssi_thread();
 void process_rssi(struct k_work *item);
-int getNearestRecordIndex();
+void init_buffer();
+int getRecords();
 #endif

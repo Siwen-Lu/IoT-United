@@ -60,7 +60,7 @@
       <DefaultHeaderDiscoveryMode>None</DefaultHeaderDiscoveryMode>
       <EnableFastUpToDateCheck>true</EnableFastUpToDateCheck>
       <NRFConnectExtension>
-        <SDKVersion>v1.6.1</SDKVersion>
+        <SDKVersion>v1.7.0</SDKVersion>
       </NRFConnectExtension>
     </ProjectModeSettings>
   </Build>
@@ -169,7 +169,7 @@
       <ProjectSettingsExtension xsi:type="com.visualgdb.project.external.nrfconnect.extension">
         <BoardName>thingy52_nrf52832</BoardName>
         <OverlayFiles>
-          <string>C:/IoT-United/Assets/Assets-Thingy52-Mesh/boards/thingy52.overlay</string>
+          <string>C:/Users/Jacob/IoT-United/Assets/Assets-Thingy52-Mesh/boards/thingy52.overlay</string>
         </OverlayFiles>
       </ProjectSettingsExtension>
     </VisualGDBConfiguration>

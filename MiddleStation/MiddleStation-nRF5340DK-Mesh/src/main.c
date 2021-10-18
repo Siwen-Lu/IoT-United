@@ -1,16 +1,4 @@
-/*
- * Copyright (c) 2019 Nordic Semiconductor ASA
- *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
- */
-
-/** @file
- *  @brief Nordic Mesh light sample
- */
-
 #include <dk_buttons_and_leds.h>
-
-
 #include <logging/log.h>
 LOG_MODULE_REGISTER(chat, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -18,7 +6,7 @@ LOG_MODULE_REGISTER(chat, CONFIG_LOG_DEFAULT_LEVEL);
 #include <bluetooth/mesh/models.h>
 #include <bluetooth/mesh/dk_prov.h>
 #include "model_handler.h"
-
+#include "eth_comms.h"
 static void bt_ready(int err)
 {
 	if (err) {
@@ -27,9 +15,6 @@ static void bt_ready(int err)
 	}
 
 	printk("Bluetooth initialized\n");
-	
-	dk_leds_init();
-	dk_buttons_init(NULL);
 
 	err = bt_mesh_init(bt_mesh_dk_prov_init(), model_handler_init());
 	if (err) {
@@ -47,11 +32,12 @@ static void bt_ready(int err)
 	printk("Mesh initialized\n");
 }
 
-#include "eth_comms.h"
-
 void main(void)
 {
 
+	dk_leds_init();
+	dk_buttons_init(NULL);
+	
 	printk("Initializing...\n");
 
 	int err = bt_enable(bt_ready);

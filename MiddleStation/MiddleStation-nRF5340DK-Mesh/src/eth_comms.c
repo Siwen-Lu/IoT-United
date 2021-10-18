@@ -1,16 +1,13 @@
 #include "eth_comms.h"
-#include <logging/log.h>
-LOG_MODULE_REGISTER(ethernet_sockets, LOG_LEVEL_DBG);
-
 #include <zephyr.h>
 #include <net/socket.h>
 #include <net/mqtt.h>
 #include <random/rand32.h>
-
 #include <string.h>
 #include <errno.h>
-
 #include "config.h"
+#include <logging/log.h>
+LOG_MODULE_REGISTER(ethernet_sockets, LOG_LEVEL_DBG);
 
 #if defined(CONFIG_USERSPACE)
 #include <app_memory/app_memdomain.h>
