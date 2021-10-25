@@ -479,10 +479,6 @@ do_connect:
 
 int publisher(char * payload) {
 	int rc = 0;
-#if defined(CONFIG_MQTT_LIB_TLS)
-	rc = tls_init();
-
-#endif
 
 	rc = try_to_connect(&client_ctx);
 	printk("successful connext connect\n");
@@ -498,13 +494,12 @@ int publisher(char * payload) {
 	return rc;
 }
 
-// void start_app(void* indata1, void* indata2, void* indata3)
-// {
+void start_app(void* indata1, void* indata2, void* indata3)
+{
 
-// 	subscriber();
+	subscriber();
 
-// 	return;
-// }
+}
 
 #if defined(CONFIG_USERSPACE)
 #define STACK_SIZE 2048
@@ -586,12 +581,12 @@ struct k_thread MQTT_SERVER_THREAD;
 void server_init()
 {
 
-// #if defined(CONFIG_MQTT_LIB_TLS)
-// 	int rc;
-// 	rc = tls_init();
+#if defined(CONFIG_MQTT_LIB_TLS)
+	int rc;
+	rc = tls_init();
 
-// #endif
-	//todo: some preparation
+#endif
+	// //todo: some preparation
 	// k_thread_create(&MQTT_SERVER_THREAD,
 	// 	mqtt_server_stack_area,
 	// 	K_THREAD_STACK_SIZEOF(mqtt_server_stack_area),
