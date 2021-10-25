@@ -377,14 +377,10 @@ static int try_to_connect(struct mqtt_client *client)
 		if (client == NULL) {
 			printk("gg\n");
 		}
-		printk("nani\n");
+		
 		printk("buffer size = %d\n",client->rx_buf_size);
-		printk("loli\n");
-
 
 		rc = mqtt_connect(client);
-
-		printk("why \n");
 
 		if (rc != 0) {
 			PRINT_RESULT("mqtt_connect", rc);
@@ -488,12 +484,9 @@ int publisher(char * payload) {
 
 #endif
 
-	printk("fucker attempt to connect\n");
 	rc = try_to_connect(&client_ctx);
 	printk("successful connext connect\n");
 
-
-	printk("haha = %s\n",payload);
 	rc = publish(&client_ctx, MQTT_QOS_2_EXACTLY_ONCE,payload);
 	PRINT_RESULT("mqtt_publish", rc);
 
