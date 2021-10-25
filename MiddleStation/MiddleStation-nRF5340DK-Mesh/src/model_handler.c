@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/mesh/models.h>
@@ -11,6 +12,7 @@
 #include "model_handler.h"
 
 #include <logging/log.h>
+#include "eth_comms.h"
 LOG_MODULE_DECLARE(chat);
 
 /******************************************************************************/
@@ -21,6 +23,8 @@ LOG_MODULE_DECLARE(chat);
  */
 static struct k_work_delayable attention_blink_work;
 static bool attention;
+//todo
+static char str[128];
 
 static void attention_blink(struct k_work *work)
 {
@@ -185,21 +189,37 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 	printk("<0x%04X>: %s\n", ctx->addr, msg);
 }
 
+void periodic_pub_handler(struct k_work *work)
+{
+    /* do the processing that needs to be done periodically */
+	publisher(str);
+}
+
+
+K_WORK_DEFINE(periodic_pub, periodic_pub_handler);
+
+void pub_timer_handler(struct k_timer *dummy)
+{
+    k_work_submit(&periodic_pub);
+}
+
+K_TIMER_DEFINE(pub_timer, pub_timer_handler, NULL);
+
 static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 					struct bt_mesh_msg_ctx *ctx,
 					const uint8_t *msg)
 {
-	/* Don't print own messages. */
-	if (address_is_local(chat->model, ctx->addr)) {
-		return;
-	}
-	
 	uint16_t middleAddr1;
 	uint16_t middleAddr2;
 	uint16_t middleAddr3;
 	int8_t middleRSSI1;
 	int8_t middleRSSI2;
 	int8_t middleRSSI3;
+
+	/* Don't print own messages. */
+	if (address_is_local(chat->model, ctx->addr)) {
+		return;
+	}
 	
 	memcpy(&middleAddr1, &msg[0], 2);
 	memcpy(&middleRSSI1, &msg[2], 1);
@@ -211,8 +231,20 @@ static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 	printk("%04X:%d\n", middleAddr1, middleRSSI1);
 	printk("%04X:%d\n", middleAddr2, middleRSSI2);
 	printk("%04X:%d\n", middleAddr3, middleRSSI3);
+
+	int err = sprintf(str,"%d : %d , %d : %d , %d : %d\n",middleAddr1,middleRSSI1,middleAddr2,middleRSSI2,middleAddr3,middleRSSI3);	
+	printk("%s\n",str);
 	
-	// todo
+	if (err < 0) {
+		printk("sprintf failed\n");
+	}
+
+	k_timer_start(&pub_timer,K_SECONDS(1),K_NO_WAIT);
+
+	if (err < 0) {
+		printk("publish failed\n");
+	}
+
 }
 
 static void handle_chat_message_reply(struct bt_mesh_chat_cli *chat,

@@ -217,6 +217,8 @@ extern const struct bt_mesh_model_cb _bt_mesh_chat_cli_cb;
 }
 #endif
 
+size_t strnlen(const char *s, size_t maxlen);
+
 #endif /* BT_MESH_CHAT_CLI_H__ */
 
 /** @} */

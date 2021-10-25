@@ -2,5 +2,8 @@
     "files.associations": {
         "rand32.h": "c",
         "string.h": "c"
-    }
+    },
+    "nrf-connect.applications": [
+        "/home/swl/ncs/Iot_United/IoT-United/MiddleStation/MiddleStation-nRF5340DK-Mesh"
+    ]
 }

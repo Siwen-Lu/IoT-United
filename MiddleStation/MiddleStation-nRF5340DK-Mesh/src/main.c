@@ -34,7 +34,6 @@ static void bt_ready(int err)
 
 void main(void)
 {
-
 	dk_leds_init();
 	dk_buttons_init(NULL);
 	
@@ -44,9 +43,6 @@ void main(void)
 	if (err) {
 		printk("Bluetooth init failed (err %d)\n", err);
 	}
-
-	//UNCOMMENT LATER
-	eth_init();
-	
+	eth_init();	
 	server_init();
 }

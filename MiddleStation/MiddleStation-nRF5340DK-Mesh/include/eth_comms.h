@@ -22,11 +22,10 @@
 #include <net/net_pkt.h>
 #endif
 
-#define UDP_PORT 12345
-
 #define CHECK(r) { if (r == -1) { printk("Error: " #r "\n"); exit(1); } }
+
 
 void eth_init();
 void server_init();
-
+extern int publisher(char * payload);
 #endif // !__ETH_COMMS_H__

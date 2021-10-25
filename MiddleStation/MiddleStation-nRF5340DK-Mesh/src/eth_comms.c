@@ -211,20 +211,13 @@ void mqtt_evt_handler(struct mqtt_client *const client,
 	}
 }
 
-//change this to set the data packet to send to subscriber
-static char *get_mqtt_payload(enum mqtt_qos qos)
-{
-	static APP_DMEM char payload[] = "124.2.255.1 0x001 0m001:90 0m001:100 0m001:80";
-	return payload;
-}
-
 //change this to set the topic
 static char *get_mqtt_topic(void)
 {
 	return CONFIG_MQTT_PUB_TOPIC;
 }
 
-static int publish(struct mqtt_client *client, enum mqtt_qos qos)
+static int publish(struct mqtt_client *client, enum mqtt_qos qos,char * payload)
 {
 	struct mqtt_publish_param param;
 
@@ -232,7 +225,7 @@ static int publish(struct mqtt_client *client, enum mqtt_qos qos)
 	param.message.topic.topic.utf8 = (uint8_t *)get_mqtt_topic();
 	param.message.topic.topic.size =
 			strlen(param.message.topic.topic.utf8);
-	param.message.payload.data = get_mqtt_payload(qos);
+	param.message.payload.data = payload;
 	param.message.payload.len =
 			strlen(param.message.payload.data);
 	param.message_id = sys_rand32_get();
@@ -378,9 +371,21 @@ static int try_to_connect(struct mqtt_client *client)
 
 	while (i++ < APP_CONNECT_TRIES && !connected) {
 
+
 		client_init(client);
 
+		if (client == NULL) {
+			printk("gg\n");
+		}
+		printk("nani\n");
+		printk("buffer size = %d\n",client->rx_buf_size);
+		printk("loli\n");
+
+
 		rc = mqtt_connect(client);
+
+		printk("why \n");
+
 		if (rc != 0) {
 			PRINT_RESULT("mqtt_connect", rc);
 			k_sleep(K_MSEC(APP_SLEEP_MSECS));
@@ -437,6 +442,12 @@ static int process_mqtt_and_sleep(struct mqtt_client *client, int timeout)
 				PRINT_RESULT("mqtt_input", rc);
 				return rc;
 			}
+			//decoding subscribing packet
+			char subscribe_packet[APP_MQTT_BUFFER_SIZE];
+			if (mqtt_read_publish_payload(client,subscribe_packet,sizeof(subscribe_packet)) > 0) {
+				char * inst = strtok(subscribe_packet," "); 
+				printk("inst = %s\n",inst);
+			}
 		}
 
 		remaining = timeout + start_time - k_uptime_get();
@@ -444,25 +455,9 @@ static int process_mqtt_and_sleep(struct mqtt_client *client, int timeout)
 	return 0;
 }
 
-void periodic_pub_handler(struct k_work *work)
-{
-    /* do the processing that needs to be done periodically */
-	publish(&client_ctx, MQTT_QOS_2_EXACTLY_ONCE);
-}
-
-
-K_WORK_DEFINE(periodic_pub, periodic_pub_handler);
-
-void pub_timer_handler(struct k_timer *dummy)
-{
-    k_work_submit(&periodic_pub);
-}
-
-K_TIMER_DEFINE(pub_timer, pub_timer_handler, NULL);
-
 #define SUCCESS_OR_EXIT(rc) { if (rc != 0) { return 1; } }
 #define SUCCESS_OR_BREAK(rc) { if (rc != 0) { break; } }
-static int publisher(void)
+static int subscriber(void)
 {
 	int rc, r = 0;
 
@@ -471,9 +466,11 @@ do_connect:
 	rc = try_to_connect(&client_ctx);
 	PRINT_RESULT("try_to_connect", rc);
 
-	k_timer_start(&pub_timer,K_MSEC(2*APP_SLEEP_MSECS),K_MSEC(2*APP_SLEEP_MSECS));
+	rc = mqtt_ping(&client_ctx);
+	PRINT_RESULT("mqtt_ping", rc);
 	subscribe(&client_ctx);	
-	while(1) {
+	
+	while (1) {
 		process_mqtt_and_sleep(&client_ctx,APP_SLEEP_MSECS);
 	}
 
@@ -484,13 +481,37 @@ do_connect:
 	return r;
 }
 
-void start_app(void* indata1, void* indata2, void* indata3)
-{
+int publisher(char * payload) {
+	int rc = 0;
+#if defined(CONFIG_MQTT_LIB_TLS)
+	rc = tls_init();
 
-	publisher();
+#endif
 
-	return;
+	printk("fucker attempt to connect\n");
+	rc = try_to_connect(&client_ctx);
+	printk("successful connext connect\n");
+
+
+	printk("haha = %s\n",payload);
+	rc = publish(&client_ctx, MQTT_QOS_2_EXACTLY_ONCE,payload);
+	PRINT_RESULT("mqtt_publish", rc);
+
+	rc = process_mqtt_and_sleep(&client_ctx, APP_SLEEP_MSECS);
+
+	rc = mqtt_disconnect(&client_ctx);
+	PRINT_RESULT("mqtt_disconnect", rc);
+
+	return rc;
 }
+
+// void start_app(void* indata1, void* indata2, void* indata3)
+// {
+
+// 	subscriber();
+
+// 	return;
+// }
 
 #if defined(CONFIG_USERSPACE)
 #define STACK_SIZE 2048
@@ -572,14 +593,14 @@ struct k_thread MQTT_SERVER_THREAD;
 void server_init()
 {
 
-#if defined(CONFIG_MQTT_LIB_TLS)
-	int rc;
-	rc = tls_init();
+// #if defined(CONFIG_MQTT_LIB_TLS)
+// 	int rc;
+// 	rc = tls_init();
 
-#endif
+// #endif
 	//todo: some preparation
-	k_thread_create(&MQTT_SERVER_THREAD,
-		mqtt_server_stack_area,
-		K_THREAD_STACK_SIZEOF(mqtt_server_stack_area),
-		&start_app, NULL, NULL, NULL, MQTT_THREAD_PRIORITY, 0,K_NO_WAIT);
+	// k_thread_create(&MQTT_SERVER_THREAD,
+	// 	mqtt_server_stack_area,
+	// 	K_THREAD_STACK_SIZEOF(mqtt_server_stack_area),
+	// 	&start_app, NULL, NULL, NULL, MQTT_THREAD_PRIORITY, 0,K_NO_WAIT);
 }
