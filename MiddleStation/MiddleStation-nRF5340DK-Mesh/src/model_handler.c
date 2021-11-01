@@ -232,7 +232,7 @@ static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 	printk("%04X:%d\n", middleAddr2, middleRSSI2);
 	printk("%04X:%d\n", middleAddr3, middleRSSI3);
 
-	int err = sprintf(str,"%d : %d , %d : %d , %d : %d\n",middleAddr1,middleRSSI1,middleAddr2,middleRSSI2,middleAddr3,middleRSSI3);	
+	int err = sprintf(str,"%d  %d:%d  %d:%d  %d:%d\n",ctx->addr,middleAddr1,middleRSSI1,middleAddr2,middleRSSI2,middleAddr3,middleRSSI3);	
 	printk("%s\n",str);
 	
 	if (err < 0) {

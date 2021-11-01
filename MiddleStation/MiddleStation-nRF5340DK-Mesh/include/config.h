@@ -47,7 +47,7 @@
 
 //Changeable
 #define CONFIG_MQTT_SUB_TOPIC "device/123/alarm"
-#define CONFIG_MQTT_PUB_TOPIC "device/123/rssi"
+#define CONFIG_MQTT_PUB_TOPIC "device/rssi"
 
 #endif
 

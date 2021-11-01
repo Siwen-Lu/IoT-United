@@ -374,12 +374,6 @@ static int try_to_connect(struct mqtt_client *client)
 
 		client_init(client);
 
-		if (client == NULL) {
-			printk("gg\n");
-		}
-		
-		printk("buffer size = %d\n",client->rx_buf_size);
-
 		rc = mqtt_connect(client);
 
 		if (rc != 0) {
