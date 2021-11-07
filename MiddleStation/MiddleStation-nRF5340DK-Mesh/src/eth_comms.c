@@ -9,6 +9,8 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(ethernet_sockets, LOG_LEVEL_DBG);
 
+K_MUTEX_DEFINE(dhcp_mutex);
+
 #if defined(CONFIG_USERSPACE)
 #include <app_memory/app_memdomain.h>
 K_APPMEM_PARTITION_DEFINE(app_partition);
@@ -561,9 +563,7 @@ void eth_init()
 		handler,
 		NET_EVENT_IPV4_ADDR_ADD);
 	net_mgmt_add_event_callback(&mgmt_cb);
-
 	iface = net_if_get_default();
-
 	net_dhcpv4_start(iface);
 }
 
