@@ -564,6 +564,12 @@ void eth_init()
 		NET_EVENT_IPV4_ADDR_ADD);
 	net_mgmt_add_event_callback(&mgmt_cb);
 	iface = net_if_get_default();
+	// int err = net_mgmt_event_wait_on_iface(iface,NET_EVENT_IPV4_ADDR_ADD,NULL,NULL,NULL,K_FOREVER);
+
+	// if (err != 0) {
+	// 	printk("error in dhcp\n");
+	// }
+
 	net_dhcpv4_start(iface);
 }
 
@@ -580,9 +586,4 @@ void server_init()
 	rc = tls_init();
 
 #endif
-	// //todo: some preparation
-	// k_thread_create(&MQTT_SERVER_THREAD,
-	// 	mqtt_server_stack_area,
-	// 	K_THREAD_STACK_SIZEOF(mqtt_server_stack_area),
-	// 	&start_app, NULL, NULL, NULL, MQTT_THREAD_PRIORITY, 0,K_NO_WAIT);
 }
