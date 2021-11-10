@@ -23,4 +23,10 @@ const struct bt_mesh_comp *model_handler_init(void);
 #ifdef __cplusplus
 }
 #endif
+
+typedef struct mqtt_work_info {
+    struct k_work work;
+    char *data;
+} mqtt_work_info;
+
 #endif /* MODEL_HANDLER_H__ */
