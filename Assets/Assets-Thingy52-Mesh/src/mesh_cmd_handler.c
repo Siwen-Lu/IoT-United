@@ -44,16 +44,16 @@ static int handle_message(struct bt_mesh_model *model,
 }
 
 /* .. include_startingpoint_chat_cli_rst_1 */
-static void send_message_reply(struct bt_mesh_chat_cli *chat,
-	struct bt_mesh_msg_ctx *ctx)
-{
-	BT_MESH_MODEL_BUF_DEFINE(msg,
-		BT_MESH_CHAT_CLI_OP_MESSAGE_REPLY,
-		BT_MESH_CHAT_CLI_MSG_LEN_MESSAGE_REPLY);
-	bt_mesh_model_msg_init(&msg, BT_MESH_CHAT_CLI_OP_MESSAGE_REPLY);
-
-	(void)bt_mesh_model_send(chat->model, ctx, &msg, NULL, NULL);
-}
+//static void send_message_reply(struct bt_mesh_chat_cli *chat,
+//	struct bt_mesh_msg_ctx *ctx)
+//{
+//	BT_MESH_MODEL_BUF_DEFINE(msg,
+//		BT_MESH_CHAT_CLI_OP_MESSAGE_REPLY,
+//		BT_MESH_CHAT_CLI_MSG_LEN_MESSAGE_REPLY);
+//	bt_mesh_model_msg_init(&msg, BT_MESH_CHAT_CLI_OP_MESSAGE_REPLY);
+//
+//	(void)bt_mesh_model_send(chat->model, ctx, &msg, NULL, NULL);
+//}
 
 static int handle_private_message(struct bt_mesh_model *model,
 	struct bt_mesh_msg_ctx *ctx,
