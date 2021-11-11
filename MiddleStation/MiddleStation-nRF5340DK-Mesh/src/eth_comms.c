@@ -564,11 +564,6 @@ void eth_init()
 		NET_EVENT_IPV4_ADDR_ADD);
 	net_mgmt_add_event_callback(&mgmt_cb);
 	iface = net_if_get_default();
-	// int err = net_mgmt_event_wait_on_iface(iface,NET_EVENT_IPV4_ADDR_ADD,NULL,NULL,NULL,K_FOREVER);
-
-	// if (err != 0) {
-	// 	printk("error in dhcp\n");
-	// }
 
 	net_dhcpv4_start(iface);
 }
