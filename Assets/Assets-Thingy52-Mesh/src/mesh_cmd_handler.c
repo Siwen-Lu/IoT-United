@@ -68,7 +68,7 @@ static int handle_private_message(struct bt_mesh_model *model,
 		chat->handlers->private_message(chat, ctx, msg);
 	}
 
-	send_message_reply(chat, ctx);
+	//send_message_reply(chat, ctx);
 	return 0;
 }
 /* .. include_endpoint_chat_cli_rst_1 */

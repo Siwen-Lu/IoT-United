@@ -477,7 +477,7 @@ int publisher(char * payload) {
 	int rc = 0;
 
 	rc = try_to_connect(&client_ctx);
-	printk("successful connext connect\n");
+	//printk("successful connext connect\n");
 
 	rc = publish(&client_ctx, MQTT_QOS_2_EXACTLY_ONCE,payload);
 	PRINT_RESULT("mqtt_publish", rc);
