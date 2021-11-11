@@ -60,7 +60,7 @@
       <DefaultHeaderDiscoveryMode>None</DefaultHeaderDiscoveryMode>
       <EnableFastUpToDateCheck>true</EnableFastUpToDateCheck>
       <NRFConnectExtension>
-        <SDKVersion>v1.7.0</SDKVersion>
+        <SDKVersion>v1.7.1</SDKVersion>
       </NRFConnectExtension>
     </ProjectModeSettings>
   </Build>

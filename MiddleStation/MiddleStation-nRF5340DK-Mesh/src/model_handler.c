@@ -23,8 +23,12 @@ LOG_MODULE_DECLARE(chat);
  */
 static struct k_work_delayable attention_blink_work;
 static bool attention;
-//todo
-static char str[128];
+#define MQTT_PUB_STACK_SIZE 2048
+#define MQTT_PUB_PRIORITY 5
+
+K_THREAD_STACK_DEFINE(mqtt_pub_stack_area, MQTT_PUB_STACK_SIZE);
+
+struct k_work_q mqtt_pub_work_q;
 
 static void attention_blink(struct k_work *work)
 {
@@ -188,62 +192,60 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 
 	printk("<0x%04X>: %s\n", ctx->addr, msg);
 }
-
-void periodic_pub_handler(struct k_work *work)
+typedef struct mqtt_pub_msg
 {
-    /* do the processing that needs to be done periodically */
-	publisher(str);
-}
-
-
-K_WORK_DEFINE(periodic_pub, periodic_pub_handler);
-
-void pub_timer_handler(struct k_timer *dummy)
-{
-    k_work_submit(&periodic_pub);
-}
-
-K_TIMER_DEFINE(pub_timer, pub_timer_handler, NULL);
-
-static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
-					struct bt_mesh_msg_ctx *ctx,
-					const uint8_t *msg)
-{
+	struct k_work work;
+	uint16_t node_address;
 	uint16_t middleAddr1;
 	uint16_t middleAddr2;
 	uint16_t middleAddr3;
 	int8_t middleRSSI1;
 	int8_t middleRSSI2;
 	int8_t middleRSSI3;
+}mqtt_pub_msg;
+
+void mqtt_publish_cb(struct k_work *item)
+{
+	mqtt_pub_msg *buffer = CONTAINER_OF(item, mqtt_pub_msg, work);
+	
+	char str[64];
+	
+	sprintf(str, "%d  %d:%d  %d:%d  %d:%d\n", buffer->node_address, buffer->middleAddr1, buffer->middleRSSI1, buffer->middleAddr2, buffer->middleRSSI2, buffer->middleAddr3, buffer->middleRSSI3);	
+	
+	printk("%s\n", str);
+	
+	publisher(str);
+	
+	k_free(buffer);
+}
+
+static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
+					struct bt_mesh_msg_ctx *ctx,
+					const uint8_t *msg)
+{
 
 	/* Don't print own messages. */
 	if (address_is_local(chat->model, ctx->addr)) {
 		return;
 	}
 	
-	memcpy(&middleAddr1, &msg[0], 2);
-	memcpy(&middleRSSI1, &msg[2], 1);
-	memcpy(&middleAddr2, &msg[3], 2);
-	memcpy(&middleRSSI2, &msg[5], 1);
-	memcpy(&middleAddr3, &msg[6], 2);
-	memcpy(&middleRSSI3, &msg[8], 1);
+	mqtt_pub_msg *mqtt_buf = k_malloc(sizeof(mqtt_pub_msg));
 	
-	printk("%04X:%d\n", middleAddr1, middleRSSI1);
-	printk("%04X:%d\n", middleAddr2, middleRSSI2);
-	printk("%04X:%d\n", middleAddr3, middleRSSI3);
-
-	int err = sprintf(str,"%d  %d:%d  %d:%d  %d:%d\n",ctx->addr,middleAddr1,middleRSSI1,middleAddr2,middleRSSI2,middleAddr3,middleRSSI3);	
-	printk("%s\n",str);
+	memcpy(&mqtt_buf->middleAddr1, &msg[0], 2);
+	memcpy(&mqtt_buf->middleRSSI1, &msg[2], 1);
+	memcpy(&mqtt_buf->middleAddr2, &msg[3], 2);
+	memcpy(&mqtt_buf->middleRSSI2, &msg[5], 1);
+	memcpy(&mqtt_buf->middleAddr3, &msg[6], 2);
+	memcpy(&mqtt_buf->middleRSSI3, &msg[8], 1);
 	
-	if (err < 0) {
-		printk("sprintf failed\n");
-	}
-
-	k_timer_start(&pub_timer,K_SECONDS(1),K_NO_WAIT);
-
-	if (err < 0) {
-		printk("publish failed\n");
-	}
+	mqtt_buf->node_address = ctx->addr;
+	
+//	printk("%04X:%d\n", middleAddr1, middleRSSI1);
+//	printk("%04X:%d\n", middleAddr2, middleRSSI2);
+//	printk("%04X:%d\n", middleAddr3, middleRSSI3);
+	
+	k_work_init(&mqtt_buf->work, mqtt_publish_cb);
+	k_work_submit_to_queue(&mqtt_pub_work_q, &mqtt_buf->work);
 
 }
 
@@ -441,6 +443,8 @@ K_TIMER_DEFINE(rssi_timer, rssiBoardcasting, NULL);
 /******************************************************************************/
 /******************************** Public API **********************************/
 /******************************************************************************/
+
+
 const struct bt_mesh_comp *model_handler_init(void)
 {
 	k_work_init_delayable(&attention_blink_work, attention_blink);
@@ -448,6 +452,13 @@ const struct bt_mesh_comp *model_handler_init(void)
 	printk("Starting BLE Mesh\n");
 	
 	k_timer_start(&rssi_timer, K_SECONDS(5), K_SECONDS(1));
+
+	k_work_queue_start(&mqtt_pub_work_q,
+		mqtt_pub_stack_area,
+		K_THREAD_STACK_SIZEOF(mqtt_pub_stack_area),
+		MQTT_PUB_PRIORITY,
+		NULL);
+	
 	
 	return &comp;
 }

@@ -60,7 +60,7 @@
       <DefaultHeaderDiscoveryMode>None</DefaultHeaderDiscoveryMode>
       <EnableFastUpToDateCheck>true</EnableFastUpToDateCheck>
       <NRFConnectExtension>
-        <SDKVersion>v1.7.0</SDKVersion>
+        <SDKVersion>v1.7.1</SDKVersion>
       </NRFConnectExtension>
     </ProjectModeSettings>
   </Build>
@@ -79,7 +79,7 @@
   </CustomDebug>
   <DeviceTerminalSettings>
     <Connection xsi:type="com.sysprogs.terminal.connection.serial">
-      <ComPortName>COM4</ComPortName>
+      <ComPortName>COM11</ComPortName>
       <AdvancedSettings>
         <BaudRate>115200</BaudRate>
         <DataBits>8</DataBits>
