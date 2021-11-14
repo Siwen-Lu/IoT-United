@@ -1,6 +1,9 @@
 /MiddleStation/MiddleStation-nRF5340DK-Mesh/build/
-/MiddleStation/sockets_server_nrf5340/build/
 /MiddleStation/MiddleStation-nRF5340DK-Mesh/.visualgdb/
+/MiddleStation/MiddleStation-nRF5340DK-MeshV2/build/
+/MiddleStation/MiddleStation-nRF5340DK-MeshV2/.visualgdb/
+/MiddleStation/MiddleStation-nRF5340DK-MeshSerial/build/
+/MiddleStation/MiddleStation-nRF5340DK-MeshSerial/.visualgdb/
 /Assets/Assets-Thingy52-Mesh/.visualgdb/
 /Assets/Assets-Thingy52-Mesh/build/
 

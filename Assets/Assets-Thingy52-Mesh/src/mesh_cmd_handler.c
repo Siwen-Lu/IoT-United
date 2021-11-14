@@ -451,8 +451,6 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 		return;
 	}
 	
-	/* TODO */
-	
 	RSSI *rssi_info = k_malloc(sizeof(RSSI));
 	rssi_info->address = ctx->addr;
 	rssi_info->rssi = ctx->recv_rssi;

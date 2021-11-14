@@ -5,14 +5,10 @@
 #include <bluetooth/mesh/models.h>
 #include <dk_buttons_and_leds.h>
 
-#include <shell/shell.h>
-#include <shell/shell_uart.h>
-
 #include "chat_cli.h"
 #include "model_handler.h"
-
 #include <logging/log.h>
-#include "eth_comms.h"
+
 LOG_MODULE_DECLARE(chat);
 
 /******************************************************************************/
@@ -23,12 +19,6 @@ LOG_MODULE_DECLARE(chat);
  */
 static struct k_work_delayable attention_blink_work;
 static bool attention;
-#define MQTT_PUB_STACK_SIZE 2048
-#define MQTT_PUB_PRIORITY 5
-
-K_THREAD_STACK_DEFINE(mqtt_pub_stack_area, MQTT_PUB_STACK_SIZE);
-
-struct k_work_q mqtt_pub_work_q;
 
 static void attention_blink(struct k_work *work)
 {
@@ -192,33 +182,6 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 
 	printk("<0x%04X>: %s\n", ctx->addr, msg);
 }
-typedef struct mqtt_pub_msg
-{
-	struct k_work work;
-	uint16_t node_address;
-	uint16_t middleAddr1;
-	uint16_t middleAddr2;
-	uint16_t middleAddr3;
-	int8_t middleRSSI1;
-	int8_t middleRSSI2;
-	int8_t middleRSSI3;
-}mqtt_pub_msg;
-
-void mqtt_publish_cb(struct k_work *item)
-{
-	mqtt_pub_msg *buffer = CONTAINER_OF(item, mqtt_pub_msg, work);
-	
-	char str[64];
-	
-	sprintf(str, "%d  %d:%d  %d:%d  %d:%d\n", buffer->node_address, buffer->middleAddr1, buffer->middleRSSI1, buffer->middleAddr2, buffer->middleRSSI2, buffer->middleAddr3, buffer->middleRSSI3);	
-	
-	printk("%s\n", str);
-	
-	// TODO
-	publisher(str);
-	
-	k_free(buffer);
-}
 
 static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 					struct bt_mesh_msg_ctx *ctx,
@@ -229,21 +192,9 @@ static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 	if (address_is_local(chat->model, ctx->addr)) {
 		return;
 	}
-	
-	mqtt_pub_msg *mqtt_buf = k_malloc(sizeof(mqtt_pub_msg));
-	
-	memcpy(&mqtt_buf->middleAddr1, &msg[0], 2);
-	memcpy(&mqtt_buf->middleRSSI1, &msg[2], 1);
-	memcpy(&mqtt_buf->middleAddr2, &msg[3], 2);
-	memcpy(&mqtt_buf->middleRSSI2, &msg[5], 1);
-	memcpy(&mqtt_buf->middleAddr3, &msg[6], 2);
-	memcpy(&mqtt_buf->middleRSSI3, &msg[8], 1);
-	
-	mqtt_buf->node_address = ctx->addr;
-	
-	k_work_init(&mqtt_buf->work, mqtt_publish_cb);
-	k_work_submit_to_queue(&mqtt_pub_work_q, &mqtt_buf->work);
 
+	printk("mqtt-%s\n", msg);
+	
 }
 
 static void handle_chat_message_reply(struct bt_mesh_chat_cli *chat,
@@ -292,39 +243,6 @@ static const struct bt_mesh_comp comp = {
 	.elem_count = ARRAY_SIZE(elements),
 };
 
-void rssiBoardcasting(struct k_timer *dummy)
-{
-	if (chat.model->keys[0] == 0xffff)
-		return;
-	
-	uint8_t msg[4] = { 0x00, 0x00, 0x00, 0x01 };
-	
-	struct bt_mesh_msg_ctx ctx = {
-		.addr = 0xC001,
-		.app_idx = chat.model->keys[0],
-		.send_ttl = 0,
-		.send_rel = false,
-	};
-
-	BT_MESH_MODEL_BUF_DEFINE(buf,
-		BT_MESH_CHAT_CLI_OP_MESSAGE,
-		BT_MESH_CHAT_CLI_MSG_MAXLEN_MESSAGE);
-	bt_mesh_model_msg_init(&buf, BT_MESH_CHAT_CLI_OP_MESSAGE);
-
-	net_buf_simple_add_mem(&buf,
-		msg,
-		strnlen(msg,
-			CONFIG_BT_MESH_CHAT_CLI_MESSAGE_LENGTH));
-	net_buf_simple_add_u8(&buf, '\0');
-
-	int err = bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
-	if (err) {
-		printk("failed to send message: %d\n", err);
-	}
-}
-
-K_TIMER_DEFINE(rssi_timer, rssiBoardcasting, NULL);
-
 /******************************************************************************/
 /******************************** Public API **********************************/
 /******************************************************************************/
@@ -335,13 +253,6 @@ const struct bt_mesh_comp *model_handler_init(void)
 	k_work_init_delayable(&attention_blink_work, attention_blink);
 
 	printk("Starting BLE Mesh\n");
-	
-	k_timer_start(&rssi_timer, K_SECONDS(5), K_SECONDS(1));
 
-	k_work_queue_start(&mqtt_pub_work_q,
-		mqtt_pub_stack_area,
-		K_THREAD_STACK_SIZEOF(mqtt_pub_stack_area),
-		MQTT_PUB_PRIORITY,
-		NULL);
 	return &comp;
 }

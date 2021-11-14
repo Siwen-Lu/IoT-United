@@ -83,7 +83,6 @@ static int hasRecord(uint16_t addr)
 
 void update_buffer(uint16_t address, int8_t rssi)
 {
-	//printk("update buffer\n");
 	int i = getFarthestRecordIndex();
 	if (i != -1)
 	{
@@ -105,7 +104,6 @@ void update_buffer(uint16_t address, int8_t rssi)
 			k_mutex_unlock(&buffer_mutex);
 		}
 	}
-	//printk("update completed");
 }
 
 void process_rssi(struct k_work *item)

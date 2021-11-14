@@ -6,6 +6,7 @@
 #include "mesh_cmd_handler.h"
 #include "rssi_thread.h"
 #include "cmd_thread.h"
+#include "power/reboot.h"
 
 extern struct led_ctx led_ctx[3];
 extern struct bt_mesh_chat_cli chat;
@@ -126,8 +127,11 @@ void uploadSelfLocation(struct k_timer *dummy)
 	net_buf_simple_add_mem(&buf, msg, 9);
 	net_buf_simple_add_u8(&buf, '\0');
 	
-	bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
-	
+	int err = bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
+	if (err) {
+		printk("failed to send message: %d\n", err);
+		sys_reboot(SYS_REBOOT_COLD);
+	}
 	init_buffer();
 }
 

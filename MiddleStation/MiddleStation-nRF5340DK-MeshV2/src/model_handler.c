@@ -5,14 +5,12 @@
 #include <bluetooth/mesh/models.h>
 #include <dk_buttons_and_leds.h>
 
-#include <shell/shell.h>
-#include <shell/shell_uart.h>
-
 #include "chat_cli.h"
 #include "model_handler.h"
 
 #include <logging/log.h>
-#include "eth_comms.h"
+#include <sys/reboot.h>
+
 LOG_MODULE_DECLARE(chat);
 
 /******************************************************************************/
@@ -30,6 +28,8 @@ K_THREAD_STACK_DEFINE(mqtt_pub_stack_area, MQTT_PUB_STACK_SIZE);
 
 struct k_work_q mqtt_pub_work_q;
 
+void mqtt_publish_cb(struct k_work *item);
+
 static void attention_blink(struct k_work *work)
 {
 	static int idx;
@@ -43,7 +43,8 @@ static void attention_blink(struct k_work *work)
 	if (attention) {
 		dk_set_leds(pattern[idx++ % ARRAY_SIZE(pattern)]);
 		k_work_reschedule(&attention_blink_work, K_MSEC(30));
-	} else {
+	}
+	else {
 		dk_set_leds(DK_NO_LEDS_MSK);
 	}
 }
@@ -111,7 +112,7 @@ static bool address_is_unicast(uint16_t addr)
  * the one stored in the cache.
  */
 static bool presence_cache_entry_check_and_update(uint16_t addr,
-				       enum bt_mesh_chat_cli_presence presence)
+	enum bt_mesh_chat_cli_presence presence)
 {
 	static size_t presence_cache_head;
 	size_t i;
@@ -159,31 +160,33 @@ static void handle_chat_start(struct bt_mesh_chat_cli *chat)
 }
 
 static void handle_chat_presence(struct bt_mesh_chat_cli *chat,
-				 struct bt_mesh_msg_ctx *ctx,
-				 enum bt_mesh_chat_cli_presence presence)
+	struct bt_mesh_msg_ctx *ctx,
+	enum bt_mesh_chat_cli_presence presence)
 {
 	if (address_is_local(chat->model, ctx->addr)) {
 		if (address_is_unicast(ctx->recv_dst)) {
 			printk("<you> are %s\n",
-				    presence_string[presence]);
+				presence_string[presence]);
 		}
-	} else {
+	}
+	else {
 		if (address_is_unicast(ctx->recv_dst)) {
 			printk("<0x%04X> is %s\n",
 				ctx->addr,
-				    presence_string[presence]);
-		} else if (presence_cache_entry_check_and_update(ctx->addr,
-								 presence)) {
+				presence_string[presence]);
+		}
+		else if (presence_cache_entry_check_and_update(ctx->addr,
+			presence)) {
 			printk("<0x%04X> is now %s\n",
-				    ctx->addr,
-				    presence_string[presence]);
+				ctx->addr,
+				presence_string[presence]);
 		}
 	}
 }
 
 static void handle_chat_message(struct bt_mesh_chat_cli *chat,
-				struct bt_mesh_msg_ctx *ctx,
-				const uint8_t *msg)
+	struct bt_mesh_msg_ctx *ctx,
+	const uint8_t *msg)
 {
 	/* Don't print own messages. */
 	if (address_is_local(chat->model, ctx->addr)) {
@@ -192,6 +195,7 @@ static void handle_chat_message(struct bt_mesh_chat_cli *chat,
 
 	printk("<0x%04X>: %s\n", ctx->addr, msg);
 }
+
 typedef struct mqtt_pub_msg
 {
 	struct k_work work;
@@ -204,25 +208,9 @@ typedef struct mqtt_pub_msg
 	int8_t middleRSSI3;
 }mqtt_pub_msg;
 
-void mqtt_publish_cb(struct k_work *item)
-{
-	mqtt_pub_msg *buffer = CONTAINER_OF(item, mqtt_pub_msg, work);
-	
-	char str[64];
-	
-	sprintf(str, "%d  %d:%d  %d:%d  %d:%d\n", buffer->node_address, buffer->middleAddr1, buffer->middleRSSI1, buffer->middleAddr2, buffer->middleRSSI2, buffer->middleAddr3, buffer->middleRSSI3);	
-	
-	printk("%s\n", str);
-	
-	// TODO
-	publisher(str);
-	
-	k_free(buffer);
-}
-
 static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
-					struct bt_mesh_msg_ctx *ctx,
-					const uint8_t *msg)
+	struct bt_mesh_msg_ctx *ctx,
+	const uint8_t *msg)
 {
 
 	/* Don't print own messages. */
@@ -247,10 +235,11 @@ static void handle_chat_private_message(struct bt_mesh_chat_cli *chat,
 }
 
 static void handle_chat_message_reply(struct bt_mesh_chat_cli *chat,
-				      struct bt_mesh_msg_ctx *ctx)
+	struct bt_mesh_msg_ctx *ctx)
 {
 	printk("<0x%04X> received the message\n", ctx->addr);
 }
+
 
 static const struct bt_mesh_chat_cli_handlers chat_handlers = {
 	.start = handle_chat_start,
@@ -265,13 +254,29 @@ static struct bt_mesh_chat_cli chat = {
 	.handlers = &chat_handlers,
 };
 
+void mqtt_publish_cb(struct k_work *item)
+{
+	mqtt_pub_msg *buffer = CONTAINER_OF(item, mqtt_pub_msg, work);
+	
+	char str[64];
+	
+	sprintf(str, "%d  %d:%d  %d:%d  %d:%d", buffer->node_address, buffer->middleAddr1, buffer->middleRSSI1, buffer->middleAddr2, buffer->middleRSSI2, buffer->middleAddr3, buffer->middleRSSI3);	
+	
+	printk("%s\n", str);
+	
+	bt_mesh_chat_cli_private_message_send(&chat, 0x1000, str);
+	
+	k_free(buffer);
+}
+
+
 static struct bt_mesh_elem elements[] = {
 	BT_MESH_ELEM(
 		1,
-		BT_MESH_MODEL_LIST(
-			BT_MESH_MODEL_CFG_SRV,
-			BT_MESH_MODEL_HEALTH_SRV(&health_srv, &health_pub)),
-		BT_MESH_MODEL_LIST(BT_MESH_MODEL_CHAT_CLI(&chat))),
+	BT_MESH_MODEL_LIST(
+		BT_MESH_MODEL_CFG_SRV,
+		BT_MESH_MODEL_HEALTH_SRV(&health_srv, &health_pub)),
+	BT_MESH_MODEL_LIST(BT_MESH_MODEL_CHAT_CLI(&chat))),
 };
 /* .. include_endpoint_model_handler_rst_1 */
 
@@ -279,7 +284,8 @@ static void print_client_status(void)
 {
 	if (!bt_mesh_is_provisioned()) {
 		printk("The mesh node is not provisioned. Please provision the mesh node before using the chat.\n");
-	} else {
+	}
+	else {
 		printk("The mesh node is provisioned. The client address is 0x%04x.\n", bt_mesh_model_elem(chat.model)->addr);
 	}
 
@@ -320,6 +326,7 @@ void rssiBoardcasting(struct k_timer *dummy)
 	int err = bt_mesh_model_send(chat.model, &ctx, &buf, NULL, NULL);
 	if (err) {
 		printk("failed to send message: %d\n", err);
+		sys_reboot(SYS_REBOOT_COLD);
 	}
 }
 
